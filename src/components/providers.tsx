@@ -8,7 +8,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       {children}
-      <Toaster position="bottom-center" toastOptions={{ duration: 3000 }} />
+      <Toaster
+        position="bottom-center"
+        containerStyle={{
+          bottom: 100,
+        }}
+        toastOptions={{ duration: 3000 }}
+      />
     </SessionProvider>
   );
 }
