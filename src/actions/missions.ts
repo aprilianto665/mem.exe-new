@@ -415,7 +415,14 @@ function getDayStatusGo(
 
 // SERVER ACTIONS BELOW
 
-export async function fetchMissionsAction(timezoneArg?: string) {
+export async function fetchMissionsAction(
+  filters?: {
+    commitmentType?: string;
+    status?: string;
+    search?: string;
+  },
+  timezoneArg?: string
+) {
   const userId = await getAuthUserId();
   const settings = await getUserSettingsAction();
   const timezone = timezoneArg || settings.timezone;
@@ -423,8 +430,25 @@ export async function fetchMissionsAction(timezoneArg?: string) {
   const todayStr = getLocalDateString(new Date(), timezone);
   const todayDate = new Date(todayStr + "T00:00:00Z");
 
+  const whereClause: any = { user_id: userId };
+
+  if (filters?.commitmentType && filters.commitmentType !== "all") {
+    whereClause.type = filters.commitmentType as mission_type;
+  }
+
+  if (filters?.status && filters.status !== "all") {
+    whereClause.status = filters.status as mission_status_type;
+  }
+
+  if (filters?.search && filters.search.trim() !== "") {
+    whereClause.title = {
+      contains: filters.search.trim(),
+      mode: "insensitive",
+    };
+  }
+
   const rawMissions = await prisma.missions.findMany({
-    where: { user_id: userId },
+    where: whereClause,
     include: {
       mission_daily_progress: {
         where: { mission_date: todayDate },
@@ -434,7 +458,9 @@ export async function fetchMissionsAction(timezoneArg?: string) {
   });
 
   const historyRows = await prisma.mission_daily_progress.findMany({
-    where: { missions: { user_id: userId } },
+    where: {
+      missions: whereClause,
+    },
     orderBy: { mission_date: "desc" },
   });
 

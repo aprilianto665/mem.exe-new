@@ -53,7 +53,7 @@ export interface MissionStoreState {
   isLoading: boolean;
   error: string | null;
   fetchData: () => Promise<void>;
-  fetchMissions: () => Promise<void>;
+  fetchMissions: (filters?: { commitmentType?: string; status?: string; search?: string }) => Promise<void>;
   fetchMissionDetail: (id: string) => Promise<void>;
   fetchDailyMissions: () => Promise<void>;
   fetchTimelineData: () => Promise<void>;
@@ -134,10 +134,10 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
     }
   },
 
-  fetchMissions: async () => {
+  fetchMissions: async (filters) => {
     set({ missions: [], isLoading: true, error: null });
     try {
-      const res = await fetchMissionsAction();
+      const res = await fetchMissionsAction(filters);
       const backendMissions = res.data || [];
       const backendHistory = res.history || [];
 

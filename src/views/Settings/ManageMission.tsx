@@ -21,10 +21,21 @@ export const ManageMission = () => {
   const navigate = useNavigate();
   const { missions, fetchMissions, isLoading } = useMissionStore();
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [commitmentType, setCommitmentType] = useState("all");
+  const [status, setStatus] = useState("all");
 
   useEffect(() => {
-    fetchMissions();
-  }, [fetchMissions]);
+    const delayDebounceFn = setTimeout(() => {
+      fetchMissions({
+        commitmentType,
+        status,
+        search: searchQuery,
+      });
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [commitmentType, status, searchQuery, fetchMissions]);
 
   return (
     <PageTemplate>
@@ -56,6 +67,8 @@ export const ManageMission = () => {
               placeholder="Search your missions..."
               className="pl-11 !bg-[#E5E7EB] !placeholder-gray-600"
               variant="noBorder"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <button
@@ -176,6 +189,10 @@ export const ManageMission = () => {
       <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
+        selectedCommitmentType={commitmentType}
+        setSelectedCommitmentType={setCommitmentType}
+        selectedStatus={status}
+        setSelectedStatus={setStatus}
       />
     </PageTemplate>
   );

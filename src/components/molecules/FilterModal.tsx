@@ -1,13 +1,16 @@
-import { useState } from "react";
 import type { FilterModalProps } from "../../types/filterModal.types";
 import { Modal } from "../atoms/Modal";
 import { Text } from "../atoms/Text";
 import { CapsuleButton } from "../atoms/CapsuleButton";
 
-export const FilterModal = ({ isOpen, onClose }: FilterModalProps) => {
-  const [selectedCommitmentType, setSelectedCommitmentType] =
-    useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+export const FilterModal = ({
+  isOpen,
+  onClose,
+  selectedCommitmentType,
+  setSelectedCommitmentType,
+  selectedStatus,
+  setSelectedStatus,
+}: FilterModalProps) => {
 
   const commitmentTypeOptions = [
     { id: "all", label: "All" },
