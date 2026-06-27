@@ -143,11 +143,6 @@ export const MissionListTimeline = ({
                           <Text size="base" weight="bold" className="text-gray-800 break-words">
                             {mission.name}
                           </Text>
-                          {mission.reason && (
-                            <Text size="xs" className="text-gray-400 mt-0.5 break-words">
-                              {mission.reason}
-                            </Text>
-                          )}
                         </div>
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusTextColor(
