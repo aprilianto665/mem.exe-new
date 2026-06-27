@@ -1,0 +1,184 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["partialIndexes"]
+  engineType      = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model email_verification_codes {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  code       String   @unique @db.VarChar(6)
+  expires_at DateTime @db.Timestamp(6)
+  attempts   Int      @default(0)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([code], map: "idx_email_verification_codes_code")
+  @@index([expires_at], map: "idx_email_verification_codes_expires_at")
+  @@index([user_id], map: "idx_email_verification_codes_user_id")
+}
+
+model milestones {
+  id           String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id      String                @db.Uuid
+  title        String                @db.VarChar(255)
+  description  String?
+  deadline     DateTime?             @db.Timestamptz(6)
+  status       milestone_status_type @default(active)
+  created_at   DateTime              @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime              @default(now()) @db.Timestamptz(6)
+  completed_at DateTime?             @db.Timestamptz(6)
+  users        users                 @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([status], map: "idx_milestones_status")
+  @@index([user_id], map: "idx_milestones_user_id")
+}
+
+model mission_daily_progress {
+  id               String                             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mission_id       String                             @db.Uuid
+  mission_date     DateTime                           @db.Date
+  minutes_done     Int                                @default(0)
+  required_minutes Int
+  status           mission_daily_progress_status_type @default(pending)
+  created_at       DateTime                           @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime                           @default(now()) @db.Timestamptz(6)
+  timer_started_at DateTime?                          @db.Timestamptz(6)
+  missions         missions                           @relation(fields: [mission_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([mission_id, mission_date])
+  @@index([mission_id], map: "idx_mission_daily_progress_mission_id")
+}
+
+model missions {
+  id                      String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                 String                   @db.Uuid
+  title                   String                   @db.VarChar(255)
+  description             String?
+  type                    mission_type
+  base_minutes_per_day    Int
+  current_minutes_per_day Int
+  status                  mission_status_type      @default(active)
+  start_date              DateTime?                @default(dbgenerated("CURRENT_DATE")) @db.Date
+  target_days             Int?
+  days_of_week            Int[]                    @db.SmallInt
+  streak                  Int?                     @default(0)
+  missed_consecutive      Int?                     @default(0)
+  created_at              DateTime                 @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime                 @default(now()) @db.Timestamptz(6)
+  total_minutes_done      Int?                     @default(0)
+  average_minutes_done    Int?                     @default(0)
+  last_stats_calc_date    DateTime?                @db.Date
+  mission_daily_progress  mission_daily_progress[]
+  users                   users                    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([status], map: "idx_missions_status")
+  @@index([user_id], map: "idx_missions_user_id")
+}
+
+model pomodoro_settings {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id       String   @unique(map: "idx_pomodoro_settings_user_id") @db.Uuid
+  focus_minutes Int
+  rest_minutes  Int
+  created_at    DateTime @default(now()) @db.Timestamp(6)
+  updated_at    DateTime @default(now()) @db.Timestamp(6)
+  users         users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model schema_migrations {
+  version BigInt  @id
+  dirty   Boolean
+}
+
+model user_auth_providers {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String        @db.Uuid
+  provider    provider_type
+  provider_id String?       @db.VarChar(255)
+  password    String?       @db.VarChar(255)
+  created_at  DateTime      @default(now()) @db.Timestamp(6)
+  updated_at  DateTime      @default(now()) @db.Timestamp(6)
+  users       users         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, provider], map: "idx_user_auth_providers_user_provider")
+  @@index([provider], map: "idx_user_auth_providers_provider")
+  @@index([provider_id], map: "idx_user_auth_providers_provider_id", where: raw("(provider_id IS NOT NULL)"))
+  @@index([user_id], map: "idx_user_auth_providers_user_id")
+}
+
+model user_settings {
+  id             String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String              @unique(map: "idx_user_settings_user_id") @db.Uuid
+  execution_mode execution_mode_type @default(default)
+  timezone       String              @db.VarChar(255)
+  created_at     DateTime            @default(now()) @db.Timestamp(6)
+  updated_at     DateTime            @default(now()) @db.Timestamp(6)
+  users          users               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([execution_mode], map: "idx_user_settings_execution_mode")
+}
+
+model users {
+  id                       String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  full_name                String                     @db.VarChar(255)
+  username                 String?                    @unique @db.VarChar(255)
+  email                    String                     @unique @db.VarChar(255)
+  email_verified_at        DateTime?                  @db.Timestamp(6)
+  deleted_at               DateTime?                  @db.Timestamp(6)
+  created_at               DateTime                   @default(now()) @db.Timestamp(6)
+  updated_at               DateTime                   @default(now()) @db.Timestamp(6)
+  email_verification_codes email_verification_codes[]
+  milestones               milestones[]
+  missions                 missions[]
+  pomodoro_settings        pomodoro_settings?
+  user_auth_providers      user_auth_providers[]
+  user_settings            user_settings?
+
+  @@index([deleted_at], map: "idx_users_deleted_at", where: raw("(deleted_at IS NULL)"))
+  @@index([email], map: "idx_users_email")
+  @@index([username], map: "idx_users_username", where: raw("(username IS NOT NULL)"))
+}
+
+enum execution_mode_type {
+  default
+  pomodoro
+}
+
+enum milestone_difficulty_type {
+  easy
+  medium
+  hard
+}
+
+enum milestone_status_type {
+  active
+  completed
+}
+
+enum mission_daily_progress_status_type {
+  pending
+  completed
+  missed
+}
+
+enum mission_status_type {
+  draft
+  active
+  completed
+  cancelled
+}
+
+enum mission_type {
+  daily_habit
+  challenge
+}
+
+enum provider_type {
+  local
+  google
+}

@@ -1,0 +1,262 @@
+.calendar-wrapper {
+  width: 100%;
+}
+
+.custom-calendar {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.custom-calendar .react-calendar__navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 0;
+}
+
+.custom-calendar .react-calendar__navigation button {
+  min-width: 36px;
+  background: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  transition: background-color 0.15s;
+}
+
+.custom-calendar .react-calendar__navigation__prev-button,
+.custom-calendar .react-calendar__navigation__next-button {
+  font-size: 1.5rem !important;
+}
+
+
+.custom-calendar .react-calendar__navigation button:hover:not(.react-calendar__navigation__prev-button):not(.react-calendar__navigation__next-button) {
+  background-color: #f3f4f6;
+}
+
+.custom-calendar .react-calendar__navigation button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.custom-calendar .react-calendar__navigation__label {
+  font-size: 1.125rem !important;
+  font-weight: 600;
+  color: #111827;
+  pointer-events: none;
+}
+
+.custom-calendar .react-calendar__navigation__prev2-button,
+.custom-calendar .react-calendar__navigation__next2-button {
+  display: none;
+}
+
+.custom-calendar .react-calendar__month-view__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  margin-bottom: 0;
+}
+
+.custom-calendar .react-calendar__month-view__weekdays__weekday {
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+}
+
+.custom-calendar .react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none;
+}
+
+
+.custom-calendar .react-calendar__month-view__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+}
+
+.custom-calendar .react-calendar__tile {
+  max-width: 100%;
+  padding: 0;
+  background: transparent;
+  text-align: center;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.5rem;
+  position: relative;
+  transition: background-color 0.15s;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.custom-calendar .react-calendar__tile:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .react-calendar__tile:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .react-calendar__tile:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .react-calendar__tile button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .react-calendar__tile button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .react-calendar__tile button {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .react-calendar__tile * {
+  outline: none !important;
+}
+
+.custom-calendar .react-calendar__tile *:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .react-calendar__tile *:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .react-calendar__tile:active {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+.custom-calendar .react-calendar__tile button:active {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+.custom-calendar .react-calendar__tile *:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Override react-calendar default active/focus styles */
+.custom-calendar .react-calendar__tile--active {
+  background-color: transparent !important;
+  color: inherit !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .react-calendar__tile--active:enabled:hover,
+.custom-calendar .react-calendar__tile--active:enabled:focus {
+  background-color: transparent !important;
+  color: inherit !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .react-calendar__tile--hasActive {
+  background-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .react-calendar__tile--hasActive:enabled:hover,
+.custom-calendar .react-calendar__tile--hasActive:enabled:focus {
+  background-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .react-calendar__tile:hover {
+  background-color: transparent !important;
+}
+
+
+.custom-calendar .react-calendar__tile abbr {
+  display: none;
+}
+
+.custom-calendar .react-calendar__tile:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background-color: transparent;
+}
+
+.custom-calendar .react-calendar__tile--neighboringMonth {
+  color: #9ca3af;
+  background-color: transparent;
+}
+
+.custom-calendar .react-calendar__tile--neighboringMonth:hover {
+  background-color: rgba(249, 250, 251, 0.3);
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .custom-calendar .react-calendar__navigation {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .custom-calendar .react-calendar__navigation button {
+    min-width: 32px;
+    font-size: 0.8125rem;
+    padding: 0.375rem;
+  }
+
+  .custom-calendar .react-calendar__navigation__prev-button,
+  .custom-calendar .react-calendar__navigation__next-button {
+    font-size: 1rem !important;
+  }
+
+  .custom-calendar .react-calendar__navigation__label {
+    font-size: 1.125rem !important;
+  }
+
+  .custom-calendar .react-calendar__month-view__weekdays__weekday {
+    font-size: 0.6875rem;
+    padding: 0.5rem 0.25rem;
+  }
+
+  .custom-calendar .react-calendar__tile {
+    padding: 0;
+    min-height: 3rem;
+  }
+}
+
+/* Override default hover to transparent */
+.custom-calendar .react-calendar__tile:hover {
+  background-color: transparent !important;
+}
+
+/* Custom hover effect - subtle rounded blue background (only on main container, not indicators) */
+.custom-calendar .react-calendar__tile:not(.react-calendar__tile--active):not(.react-calendar__tile--neighboringMonth):hover > button,
+.custom-calendar .react-calendar__tile:not(.react-calendar__tile--active):not(.react-calendar__tile--neighboringMonth):hover > div {
+  background-color: rgba(125, 184, 224, 0.2) !important;
+  border-radius: 9999px !important;
+}

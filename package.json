@@ -1,0 +1,44 @@
+{
+  "name": "mem.exe-new",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.11.2",
+    "@heroicons/react": "^2.2.0",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "bcryptjs": "^3.0.3",
+    "next": "16.2.9",
+    "next-auth": "^4.24.14",
+    "nodemailer": "^7.0.13",
+    "pg": "^8.22.0",
+    "react": "19.2.4",
+    "react-calendar": "^6.0.1",
+    "react-dom": "19.2.4",
+    "react-hot-toast": "^2.6.0",
+    "react-router-dom": "^7.18.0",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/nodemailer": "^8.0.1",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19",
+    "@types/react-calendar": "^3.9.0",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "prisma": "^7.8.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
