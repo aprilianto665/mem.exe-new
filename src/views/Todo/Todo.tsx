@@ -12,7 +12,8 @@ import {
   CheckIcon,
   PencilIcon,
   TrashIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  EllipsisVerticalIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
@@ -33,10 +34,19 @@ export const Todo = () => {
   const [editDescription, setEditDescription] = useState('');
   const [editDeadline, setEditDeadline] = useState('');
   const [isCompletedExpanded, setIsCompletedExpanded] = useState(false);
+  const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMilestones();
   }, [fetchMilestones]);
+
+  useEffect(() => {
+    const handleOutsideClick = () => {
+      setActiveDropdownId(null);
+    };
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   if (isLoading && milestones.length === 0) {
     return (
@@ -55,21 +65,14 @@ export const Todo = () => {
           {/* Premium Skeleton Loading Cards */}
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-3xl p-5 border border-gray-200 shadow-md flex items-start gap-3 animate-pulse">
-                {/* Circle checkbox skeleton */}
-                <div className="w-8 h-8 bg-gray-100 rounded-full flex-shrink-0 mt-0.5" />
-                <div className="flex-1 space-y-3">
-                  {/* Target pill skeleton */}
-                  <div className="h-5 bg-sky-50 rounded-full w-28" />
-                  {/* Title skeleton */}
-                  <div className="h-5 bg-gray-100 rounded-md w-1/2" />
-                  {/* Desc skeleton */}
-                  <div className="h-3 bg-gray-50 rounded-md w-2/3" />
-                  {/* Buttons skeleton */}
-                  <div className="grid grid-cols-2 gap-3 w-full pt-2">
-                    <div className="h-9 bg-gray-100 rounded-2xl" />
-                    <div className="h-9 bg-gray-100 rounded-2xl" />
-                  </div>
+              <div key={i} className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3 animate-pulse">
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-1/3" />
+                  <div className="h-3 bg-gray-100 rounded w-1/2" />
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg" />
                 </div>
               </div>
             ))}
@@ -156,29 +159,12 @@ export const Todo = () => {
     return (
       <div 
         key={milestone.id}
-        className={`bg-white rounded-3xl p-5 border border-gray-200 shadow-md transition-all duration-300 ${
-          isCompleted ? 'bg-green-50/20 border-green-100 opacity-80' : ''
+        className={`bg-white rounded-3xl p-5 border border-gray-100 shadow-sm ${
+          isCompleted ? 'bg-gray-50/50 border-gray-100 opacity-75' : ''
         }`}
       >
-        <div className="flex items-start justify-between gap-3">
-          
-          {!isEditing && (
-            /* Checkbox button */
-            <button
-              onClick={() => handleToggleMilestone(milestone.id)}
-              className={`flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${
-                isCompleted
-                  ? 'bg-green-500 border-green-600 text-white'
-                  : 'border-gray-300 hover:border-orange-500 hover:bg-orange-50'
-              }`}
-              title={isCompleted ? "Mark active" : "Mark achieved"}
-            >
-              {isCompleted && <CheckIcon className="w-5 h-5 stroke-[3]" />}
-            </button>
-          )}
-
+        <div className="flex items-center justify-between gap-4">
           {isEditing ? (
-            /* Editing Form */
             <div className="flex-1 min-w-0 text-left space-y-3">
               <Input
                 label="OBJECTIVE TITLE"
@@ -224,54 +210,91 @@ export const Todo = () => {
               </div>
             </div>
           ) : (
-            /* Title & Desc display */
-            <div className="flex-1 min-w-0 text-left">
-              {milestone.deadline && (
-                <div className="flex items-center gap-1 mb-1.5 text-[11px] text-[#7DB8E0] font-bold bg-sky-50 px-2 py-0.5 rounded-full w-max border border-sky-100/50">
-                  <CalendarIcon className="w-3.5 h-3.5" />
-                  <span>Target: {new Date(milestone.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                </div>
-              )}
-              
-              <Text 
-                size="lg" 
-                weight="bold" 
-                className={`text-gray-800 break-words ${isCompleted ? 'line-through text-gray-400' : ''}`}
-              >
-                {milestone.title}
-              </Text>
-              
-              {milestone.description && (
-                <Text size="sm" className="text-gray-500 mt-1 break-words">
-                  {milestone.description}
+            <>
+              {/* Left part: Title, Description, and Deadline */}
+              <div className="flex-1 min-w-0 text-left">
+                {milestone.deadline && (
+                  <div className="flex items-center gap-1 mb-1.5 text-[11px] text-[#7DB8E0] font-bold bg-sky-50 px-2 py-0.5 rounded-full w-max border border-sky-100/50">
+                    <CalendarIcon className="w-3.5 h-3.5" />
+                    <span>Target: {new Date(milestone.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  </div>
+                )}
+                
+                <Text 
+                  size="lg" 
+                  weight="bold" 
+                  className={`text-gray-800 break-words ${isCompleted ? 'line-through text-gray-400 font-medium' : ''}`}
+                >
+                  {milestone.title}
                 </Text>
-              )}
-
-              {/* Premium Action Pill Buttons Grid */}
-              <div className="mt-4 grid grid-cols-2 gap-3 w-full">
-                <button 
-                  onClick={() => {
-                    setEditingId(milestone.id);
-                    setEditTitle(milestone.title);
-                    setEditDescription(milestone.description || '');
-                    setEditDeadline(milestone.deadline ? milestone.deadline.substring(0, 10) : '');
-                  }}
-                  className="flex items-center justify-center gap-1.5 bg-[#7DB8E0] hover:bg-[#6CA7CE] text-white px-4 py-2.5 rounded-2xl cursor-pointer text-xs font-bold transition-all"
-                >
-                  <PencilIcon className="w-3.5 h-3.5" />
-                  Edit
-                </button>
-                <button 
-                  onClick={() => handleDeleteMilestone(milestone.id)}
-                  className="flex items-center justify-center gap-1.5 bg-[#FF6565] hover:bg-[#E55B5B] text-white px-4 py-2.5 rounded-2xl cursor-pointer text-xs font-bold transition-all"
-                >
-                  <TrashIcon className="w-3.5 h-3.5" />
-                  Delete
-                </button>
+                
+                {milestone.description && (
+                  <Text size="sm" className={`mt-1 break-words ${isCompleted ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {milestone.description}
+                  </Text>
+                )}
               </div>
-            </div>
-          )}
 
+              {/* Right part: Checklist and Options Dropdown */}
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {/* Checklist button */}
+                <button
+                  onClick={() => handleToggleMilestone(milestone.id)}
+                  className={`w-8 h-8 border-2 rounded-full cursor-pointer transition-all bg-white flex-shrink-0 ${
+                    isCompleted ? 'border-[#7DB8E0]' : 'border-gray-300 hover:border-[#7DB8E0]'
+                  }`}
+                  style={{
+                    backgroundImage: isCompleted
+                      ? 'radial-gradient(circle, white 8px, #7DB8E0 8px, #7DB8E0 100%)'
+                      : 'none',
+                  }}
+                  title={isCompleted ? "Mark active" : "Mark achieved"}
+                />
+
+                {/* Dropdown Menu (Three dots) */}
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveDropdownId(activeDropdownId === milestone.id ? null : milestone.id);
+                    }}
+                    className="w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer flex items-center justify-center"
+                    title="Options"
+                  >
+                    <EllipsisVerticalIcon className="w-6 h-6" />
+                  </button>
+                  
+                  {activeDropdownId === milestone.id && (
+                    <div className="absolute right-0 mt-1 w-32 bg-white border border-gray-100 rounded-2xl shadow-lg py-1.5 z-30">
+                      <button
+                        onClick={() => {
+                          setEditingId(milestone.id);
+                          setEditTitle(milestone.title);
+                          setEditDescription(milestone.description || '');
+                          setEditDeadline(milestone.deadline ? milestone.deadline.substring(0, 10) : '');
+                          setActiveDropdownId(null);
+                        }}
+                        className="w-full px-4 py-2 text-left text-xs font-bold text-gray-600 hover:bg-gray-50 flex items-center gap-2 cursor-pointer"
+                      >
+                        <PencilIcon className="w-4 h-4 text-gray-400" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleDeleteMilestone(milestone.id);
+                          setActiveDropdownId(null);
+                        }}
+                        className="w-full px-4 py-2 text-left text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
+                      >
+                        <TrashIcon className="w-4 h-4 text-red-400" />
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
