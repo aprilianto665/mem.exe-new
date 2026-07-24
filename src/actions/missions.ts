@@ -495,10 +495,6 @@ export async function fetchMissionsAction(
     whereClause.type = filters.commitmentType as mission_type;
   }
 
-  if (filters?.status && filters.status !== "all") {
-    whereClause.status = filters.status as mission_status_type;
-  }
-
   if (filters?.search && filters.search.trim() !== "") {
     whereClause.title = {
       contains: filters.search.trim(),
@@ -518,12 +514,12 @@ export async function fetchMissionsAction(
 
   const historyRows = await prisma.mission_daily_progress.findMany({
     where: {
-      missions: whereClause,
+      missions: { user_id: userId },
     },
     orderBy: { mission_date: "desc" },
   });
 
-  const missions = rawMissions.map((m: any) => {
+  const mappedMissions = rawMissions.map((m: any) => {
     const progressToday = m.mission_daily_progress[0];
     const completedDaysCount = historyRows.filter(
       (h: prisma_mission_daily_progress) =>
@@ -551,6 +547,18 @@ export async function fetchMissionsAction(
       status
     );
 
+    const [streak, missedConsecutive] = computeStreakAndMissedTS(
+      m.id,
+      m.start_date,
+      m.days_of_week,
+      m.type,
+      m.target_days,
+      historyRows,
+      todayDate,
+      timezone,
+      status
+    );
+
     return {
       id: m.id,
       title: m.title,
@@ -565,8 +573,17 @@ export async function fetchMissionsAction(
       start_date: m.start_date ? m.start_date.toISOString() : null,
       days_of_week: m.days_of_week,
       duration: m.target_days ?? 0,
+      streak,
+      missed_consecutive: missedConsecutive,
     };
   });
+
+  let finalMissions = mappedMissions;
+  if (filters?.status && filters.status !== "all") {
+    finalMissions = mappedMissions.filter(
+      (m) => m.status === filters.status
+    );
+  }
 
   const history = historyRows.map((h: prisma_mission_daily_progress) => ({
     mission_id: h.mission_id,
@@ -576,7 +593,7 @@ export async function fetchMissionsAction(
     status: h.status,
   }));
 
-  return { data: missions, history };
+  return { data: finalMissions, history };
 }
 
 export async function fetchDailyMissionsAction(timezoneArg?: string) {
