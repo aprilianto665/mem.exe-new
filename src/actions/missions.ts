@@ -67,6 +67,32 @@ function isMissionScheduledInTS(
   return true;
 }
 
+function getMissionCompletionDateTS(
+  missionId: string,
+  type: string,
+  targetDays: number | null,
+  history: prisma_mission_daily_progress[],
+  timezone: string
+): Date | null {
+  const completedHistory = history
+    .filter(
+      (h) =>
+        h.mission_id === missionId &&
+        (h.status === "completed" || h.minutes_done >= h.required_minutes)
+    )
+    .sort((a, b) => new Date(a.mission_date).getTime() - new Date(b.mission_date).getTime());
+
+  if (completedHistory.length === 0) return null;
+
+  if (type === "challenge" && targetDays !== null && targetDays > 0) {
+    if (completedHistory.length >= targetDays) {
+      return new Date(completedHistory[targetDays - 1].mission_date);
+    }
+  }
+
+  return new Date(completedHistory[completedHistory.length - 1].mission_date);
+}
+
 // Helper to check if a mission is scheduled, incorporating challenges completed-limit logic
 function isMissionScheduledUsecaseTS(
   status: string,
@@ -87,6 +113,36 @@ function isMissionScheduledUsecaseTS(
   const startStr = getLocalDateString(startDate, timezone);
   if (checkStr < startStr) return false;
 
+  const completedDaysCount = history.filter(
+    (h) =>
+      h.mission_id === missionId &&
+      (h.status === "completed" || h.minutes_done >= h.required_minutes)
+  ).length;
+
+  const effectiveStatus = checkAndUpdateMissionStatus(
+    missionId,
+    status,
+    type,
+    targetDays,
+    completedDaysCount
+  );
+
+  if (effectiveStatus === "completed") {
+    const completionDate = getMissionCompletionDateTS(
+      missionId,
+      type,
+      targetDays,
+      history,
+      timezone
+    );
+    if (completionDate) {
+      const completionStr = getLocalDateString(completionDate, timezone);
+      if (checkStr > completionStr) {
+        return false;
+      }
+    }
+  }
+
   const isSchedOnCheckDate = isMissionScheduledInTS(
     startDate,
     daysOfWeek,
@@ -96,50 +152,6 @@ function isMissionScheduledUsecaseTS(
     timezone
   );
   if (!isSchedOnCheckDate) return false;
-
-  if (type === "challenge" && targetDays !== null) {
-    const completedDates = new Set<string>();
-    for (const h of history) {
-      if (h.mission_id === missionId) {
-        const isCompleted =
-          h.status === "completed" || h.minutes_done >= h.required_minutes;
-        if (isCompleted) {
-          completedDates.add(getLocalDateString(h.mission_date, timezone));
-        }
-      }
-    }
-
-    let progressCount = 0;
-    const curr = new Date(startDate);
-    const checkTime = checkDate.getTime();
-    const todayTime = todayDateOnly.getTime();
-
-    while (curr.getTime() <= checkTime) {
-      const currStr = getLocalDateString(curr, timezone);
-      const isSched = isMissionScheduledInTS(
-        startDate,
-        daysOfWeek,
-        type,
-        targetDays,
-        curr,
-        timezone
-      );
-      if (isSched) {
-        if (curr.getTime() < todayTime) {
-          if (completedDates.has(currStr)) {
-            progressCount++;
-          }
-        } else {
-          progressCount++;
-        }
-      }
-      curr.setDate(curr.getDate() + 1);
-    }
-
-    if (progressCount > targetDays) {
-      return false;
-    }
-  }
 
   return true;
 }
@@ -153,17 +165,50 @@ function computeStreakAndMissedTS(
   targetDays: number | null,
   history: prisma_mission_daily_progress[],
   targetDate: Date,
-  timezone: string
+  timezone: string,
+  status?: string
 ): [number, number] {
   const progressMap = new Map<string, prisma_mission_daily_progress>();
+  const completedHistory: prisma_mission_daily_progress[] = [];
+
   for (const h of history) {
     if (h.mission_id === missionId) {
       progressMap.set(getLocalDateString(h.mission_date, timezone), h);
+      if (h.status === "completed" || h.minutes_done >= h.required_minutes) {
+        completedHistory.push(h);
+      }
+    }
+  }
+
+  let effectiveTargetDate = targetDate;
+
+  const completedDaysCount = completedHistory.length;
+  const isCompletedMission =
+    status === "completed" ||
+    (type === "challenge" && targetDays !== null && completedDaysCount >= targetDays);
+
+  if (isCompletedMission) {
+    let compDate: Date | null = null;
+    completedHistory.sort(
+      (a, b) => new Date(a.mission_date).getTime() - new Date(b.mission_date).getTime()
+    );
+    if (type === "challenge" && targetDays !== null && targetDays > 0 && completedHistory.length >= targetDays) {
+      compDate = new Date(completedHistory[targetDays - 1].mission_date);
+    } else if (completedHistory.length > 0) {
+      compDate = new Date(completedHistory[completedHistory.length - 1].mission_date);
+    }
+
+    if (compDate) {
+      const compStr = getLocalDateString(compDate, timezone);
+      const targetStr = getLocalDateString(targetDate, timezone);
+      if (compStr < targetStr) {
+        effectiveTargetDate = compDate;
+      }
     }
   }
 
   let streak = 0;
-  let curr = new Date(targetDate);
+  let curr = new Date(effectiveTargetDate);
   let streakBroken = false;
   const startStr = startDate ? getLocalDateString(startDate, timezone) : "";
 
@@ -178,7 +223,7 @@ function computeStreakAndMissedTS(
     if (isMissionScheduledInTS(startDate, daysOfWeek, type, targetDays, curr, timezone)) {
       const currStr = getLocalDateString(curr, timezone);
       const record = progressMap.get(currStr);
-      const targetStr = getLocalDateString(targetDate, timezone);
+      const targetStr = getLocalDateString(effectiveTargetDate, timezone);
 
       if (currStr === targetStr) {
         if (record) {
@@ -201,8 +246,8 @@ function computeStreakAndMissedTS(
 
   let totalMissed = 0;
   if (startDate) {
-    curr = new Date(targetDate);
-    curr.setDate(curr.getDate() - 1); // Start from yesterday
+    curr = new Date(effectiveTargetDate);
+    curr.setDate(curr.getDate() - 1); // Start from yesterday relative to effectiveTargetDate
 
     while (true) {
       const currStr = getLocalDateString(curr, timezone);
@@ -234,9 +279,22 @@ function calculateCurrentDayTS(
   targetDays: number | null,
   history: prisma_mission_daily_progress[],
   targetDate: Date,
-  timezone: string
+  timezone: string,
+  status?: string
 ): number {
   if (!startDate) return 1;
+
+  const completedDaysCount = history.filter(
+    (h) =>
+      h.mission_id === missionId &&
+      (h.status === "completed" || h.minutes_done >= h.required_minutes)
+  ).length;
+
+  if (type === "challenge" && targetDays !== null) {
+    if (status === "completed" || completedDaysCount >= targetDays) {
+      return targetDays;
+    }
+  }
 
   const scheduledDays = countScheduledDaysTS(startDate, daysOfWeek, type, targetDays, targetDate, timezone);
   const [_, totalMissed] = computeStreakAndMissedTS(
@@ -247,7 +305,8 @@ function calculateCurrentDayTS(
     targetDays,
     history,
     targetDate,
-    timezone
+    timezone,
+    status
   );
 
   let currentDay = scheduledDays - totalMissed;
@@ -488,7 +547,8 @@ export async function fetchMissionsAction(
       m.target_days,
       historyRows,
       todayDate,
-      timezone
+      timezone,
+      status
     );
 
     return {
@@ -574,7 +634,8 @@ export async function fetchDailyMissionsAction(timezoneArg?: string) {
       m.target_days,
       historyRows,
       todayDate,
-      timezone
+      timezone,
+      status
     );
 
     const [streak, missedConsecutive] = computeStreakAndMissedTS(
@@ -585,7 +646,8 @@ export async function fetchDailyMissionsAction(timezoneArg?: string) {
       m.target_days,
       historyRows,
       todayDate,
-      timezone
+      timezone,
+      status
     );
 
     const progressToday = m.mission_daily_progress[0];
@@ -676,7 +738,8 @@ export async function fetchMissionDetailAction(missionId: string, timezoneArg?: 
     m.target_days,
     historyRows,
     todayDate,
-    timezone
+    timezone,
+    status
   );
 
   const [streak, missedConsecutive] = computeStreakAndMissedTS(
@@ -687,7 +750,8 @@ export async function fetchMissionDetailAction(missionId: string, timezoneArg?: 
     m.target_days,
     historyRows,
     todayDate,
-    timezone
+    timezone,
+    status
   );
 
   // Stats recalculation cache logic
@@ -958,7 +1022,8 @@ export async function fetchTimelineDataAction(timezoneArg?: string) {
       m.target_days,
       historyRows,
       todayDate,
-      timezone
+      timezone,
+      status
     );
 
     const [streak, missedConsecutive] = computeStreakAndMissedTS(
@@ -969,7 +1034,8 @@ export async function fetchTimelineDataAction(timezoneArg?: string) {
       m.target_days,
       historyRows,
       todayDate,
-      timezone
+      timezone,
+      status
     );
 
     return {
@@ -1164,6 +1230,20 @@ export async function fetchDailyTimelineAction(dateStr: string, timezoneArg?: st
 
   const missionDetails: any[] = [];
   for (const m of scheduled) {
+    const completedDaysCount = historyRows.filter(
+      (h: prisma_mission_daily_progress) =>
+        h.mission_id === m.id &&
+        (h.status === "completed" || h.minutes_done >= h.required_minutes)
+    ).length;
+
+    const status = checkAndUpdateMissionStatus(
+      m.id,
+      m.status,
+      m.type,
+      m.target_days,
+      completedDaysCount
+    );
+
     const currentDay = calculateCurrentDayTS(
       m.id,
       m.start_date,
@@ -1172,7 +1252,8 @@ export async function fetchDailyTimelineAction(dateStr: string, timezoneArg?: st
       m.target_days,
       historyRows,
       targetDate,
-      timezone
+      timezone,
+      status
     );
 
     const [streak, missedConsecutive] = computeStreakAndMissedTS(
@@ -1183,7 +1264,8 @@ export async function fetchDailyTimelineAction(dateStr: string, timezoneArg?: st
       m.target_days,
       historyRows,
       targetDate,
-      timezone
+      timezone,
+      status
     );
 
     const record = historyMap.get(`${m.id}_${dateStr}`);
