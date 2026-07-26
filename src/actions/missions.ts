@@ -93,6 +93,39 @@ function getMissionCompletionDateTS(
   return new Date(completedHistory[completedHistory.length - 1].mission_date);
 }
 
+function getProjectedEndDateTS(
+  todayDate: Date,
+  daysOfWeek: number[],
+  remainingDays: number,
+  timezone: string
+): Date {
+  let count = 0;
+  const curr = new Date(todayDate);
+  let lastActiveDate = new Date(todayDate);
+
+  for (let i = 0; i < 5 * 365; i++) {
+    const isSched = isMissionScheduledInTS(
+      todayDate,
+      daysOfWeek,
+      "challenge",
+      null,
+      curr,
+      timezone
+    );
+
+    if (isSched) {
+      count++;
+      lastActiveDate = new Date(curr);
+      if (count === remainingDays) {
+        break;
+      }
+    }
+    curr.setDate(curr.getDate() + 1);
+  }
+
+  return lastActiveDate;
+}
+
 // Helper to check if a mission is scheduled, incorporating challenges completed-limit logic
 function isMissionScheduledUsecaseTS(
   status: string,
@@ -138,6 +171,21 @@ function isMissionScheduledUsecaseTS(
     if (completionDate) {
       const completionStr = getLocalDateString(completionDate, timezone);
       if (checkStr > completionStr) {
+        return false;
+      }
+    }
+  } else if (type === "challenge" && targetDays !== null && targetDays > 0) {
+    const todayStr = getLocalDateString(todayDateOnly, timezone);
+    if (checkStr > todayStr) {
+      const remainingDays = Math.max(1, targetDays - completedDaysCount);
+      const projectedEndDate = getProjectedEndDateTS(
+        todayDateOnly,
+        daysOfWeek,
+        remainingDays,
+        timezone
+      );
+      const projectedEndStr = getLocalDateString(projectedEndDate, timezone);
+      if (checkStr > projectedEndStr) {
         return false;
       }
     }
@@ -639,7 +687,20 @@ export async function fetchDailyMissionsAction(timezoneArg?: string) {
 
     if (status !== "active") continue;
 
-    if (!isMissionScheduledInTS(m.start_date, m.days_of_week, m.type, m.target_days, todayDate, timezone)) {
+    if (
+      !isMissionScheduledUsecaseTS(
+        status,
+        m.id,
+        m.start_date,
+        m.days_of_week,
+        m.type,
+        m.target_days,
+        todayDate,
+        todayDate,
+        historyRows,
+        timezone
+      )
+    ) {
       continue;
     }
 

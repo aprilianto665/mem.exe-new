@@ -78,6 +78,43 @@ const isBeforeChallengeEnd = (date: Date, start: Date, durationDays: number, sel
   return dDay <= eDay;
 };
 
+const getProjectedEndDateFromToday = (
+  today: Date,
+  remainingDays: number,
+  selectedDays?: number[]
+): Date => {
+  let count = 0;
+  const temp = new Date(today);
+  let lastActiveDate = new Date(today);
+
+  for (let i = 0; i < 5 * 365; i++) {
+    const dayOfWeek = temp.getDay();
+    let isScheduled = false;
+
+    if (selectedDays && selectedDays.length > 0) {
+      if (selectedDays.length === 7) {
+        isScheduled = true;
+      } else {
+        isScheduled = selectedDays.includes(dayOfWeek);
+      }
+    } else {
+      isScheduled = true;
+    }
+
+    if (isScheduled) {
+      count++;
+      lastActiveDate = new Date(temp);
+      if (count === remainingDays) {
+        break;
+      }
+    }
+
+    temp.setDate(temp.getDate() + 1);
+  }
+
+  return lastActiveDate;
+};
+
 const doesMilestoneDeadlineMatch = (deadline: string | undefined, date: Date) => {
   if (!deadline) return false;
   const target = new Date(deadline);
@@ -134,27 +171,45 @@ export const isMissionScheduled = (mission: Mission, date: Date): boolean => {
     return false;
   }
 
-  // Check if challenge is ended (only if it is already completed)
-  if (mission.status === 'completed' && mission.commitmentType === 'challenge' && mission.duration) {
-    if (!isBeforeChallengeEnd(date, start, mission.duration, mission.selectedDays)) {
-      return false;
+  // Check frequency & selected days
+  const dayOfWeek = date.getDay() as DayOfWeek;
+  let isDayOfWeekMatch = false;
+
+  if (mission.commitmentType === 'daily-habit') {
+    isDayOfWeekMatch = true;
+  } else if (mission.selectedDays && mission.selectedDays.length > 0) {
+    if (mission.selectedDays.length === 7) {
+      isDayOfWeekMatch = true;
+    } else {
+      isDayOfWeekMatch = mission.selectedDays.includes(dayOfWeek);
+    }
+  } else {
+    isDayOfWeekMatch = true;
+  }
+
+  if (!isDayOfWeekMatch) return false;
+
+  // Check challenge duration bounds
+  if (mission.commitmentType === 'challenge' && mission.duration) {
+    if (mission.status === 'completed' || (mission.currentDays && mission.currentDays >= mission.duration)) {
+      if (!isBeforeChallengeEnd(date, start, mission.duration, mission.selectedDays)) {
+        return false;
+      }
+    } else {
+      const today = new Date();
+      const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const checkDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+      if (checkDateOnly > todayDateOnly) {
+        const remainingDays = Math.max(1, mission.duration - (mission.currentDays || 0));
+        const projectedEnd = getProjectedEndDateFromToday(todayDateOnly, remainingDays, mission.selectedDays);
+        if (checkDateOnly > projectedEnd) {
+          return false;
+        }
+      }
     }
   }
 
-  // Check frequency & selected days
-  const dayOfWeek = date.getDay() as DayOfWeek;
-  
-  if (mission.commitmentType === 'daily-habit') {
-    return true;
-  }
-  
-  if (mission.selectedDays && mission.selectedDays.length > 0) {
-    if (mission.selectedDays.length === 7) {
-      return true;
-    }
-    return mission.selectedDays.includes(dayOfWeek);
-  }
-  
   return true;
 };
 
