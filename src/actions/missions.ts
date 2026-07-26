@@ -294,6 +294,7 @@ function computeStreakAndMissedTS(
 
   let totalMissed = 0;
   if (startDate) {
+    const todayStr = getLocalDateString(new Date(), timezone);
     curr = new Date(effectiveTargetDate);
     curr.setDate(curr.getDate() - 1); // Start from yesterday relative to effectiveTargetDate
 
@@ -303,7 +304,7 @@ function computeStreakAndMissedTS(
         break;
       }
 
-      if (isMissionScheduledInTS(startDate, daysOfWeek, type, targetDays, curr, timezone)) {
+      if (currStr < todayStr && isMissionScheduledInTS(startDate, daysOfWeek, type, targetDays, curr, timezone)) {
         const record = progressMap.get(currStr);
         const isCompleted =
           record && (record.status === "completed" || record.minutes_done >= record.required_minutes);

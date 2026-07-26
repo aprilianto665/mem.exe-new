@@ -4,7 +4,8 @@ import type { MissionCompletionStatus } from '../../types/missionHistory.types';
 import { 
   CheckCircleIcon, 
   ClockIcon,
-  FlagIcon
+  FlagIcon,
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline';
 
 const getStatusLabel = (status: MissionCompletionStatus) => {
@@ -128,6 +129,9 @@ export const MissionListTimeline = ({
                 const dotColor = getCommitmentTypeColor(mission.commitmentType);
                 const targetMin = completion?.targetMinutes || mission.minutesPerDay || mission.targetMinutes;
                 const completedMin = completion?.completedMinutes || 0;
+                const dayText = mission.commitmentType === 'challenge' && mission.duration
+                  ? `Day ${mission.currentDays || 1} of ${mission.duration}`
+                  : `Day ${mission.currentDays || 1}`;
 
                 return (
                   <div key={mission.id} className="relative flex items-start gap-4">
@@ -159,13 +163,17 @@ export const MissionListTimeline = ({
                         </span>
                       </div>
 
-                      {/* Premium Target & completed Progress minutes display */}
-                      <div className="flex items-center gap-4 text-xs font-semibold mt-3 text-gray-500">
+                      {/* Target & completed Progress minutes display */}
+                      <div className="flex items-center gap-3 text-xs font-semibold mt-3 text-gray-500 flex-wrap">
                         <div className="flex items-center gap-1.5">
+                          <CalendarDaysIcon className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-700">{dayText}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 border-l border-gray-100 pl-3">
                           <ClockIcon className="w-4 h-4 text-gray-400" />
                           <span>Goal: {targetMin}m</span>
                         </div>
-                        <div className="flex items-center gap-1.5 border-l border-gray-100 pl-4">
+                        <div className="flex items-center gap-1.5 border-l border-gray-100 pl-3">
                           <CheckCircleIcon className="w-4 h-4 text-emerald-400" />
                           <span className="text-gray-700">
                             Logged: <span className="text-emerald-500 font-bold">{completedMin}m</span>
