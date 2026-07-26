@@ -333,18 +333,6 @@ function calculateCurrentDayTS(
 ): number {
   if (!startDate) return 1;
 
-  const completedDaysCount = history.filter(
-    (h) =>
-      h.mission_id === missionId &&
-      (h.status === "completed" || h.minutes_done >= h.required_minutes)
-  ).length;
-
-  if (type === "challenge" && targetDays !== null) {
-    if (status === "completed" || completedDaysCount >= targetDays) {
-      return targetDays;
-    }
-  }
-
   const scheduledDays = countScheduledDaysTS(startDate, daysOfWeek, type, targetDays, targetDate, timezone);
   const [_, totalMissed] = computeStreakAndMissedTS(
     missionId,
