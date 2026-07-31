@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageTemplate } from "../../components/templates/PageTemplate";
 import { Text } from "../../components/atoms/Text";
@@ -23,6 +23,64 @@ export const ApiKeyPage: React.FC = () => {
   const [showKey, setShowKey] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<"fetch" | "curl" | "json">("fetch");
+
+  // Tab Sliding Indicator Logic (identical to Create page pill tabs)
+  const tabContainerRef = useRef<HTMLDivElement>(null);
+  const tabFetchRef = useRef<HTMLButtonElement>(null);
+  const tabCurlRef = useRef<HTMLButtonElement>(null);
+  const tabJsonRef = useRef<HTMLButtonElement>(null);
+  const indicatorRef = useRef<HTMLDivElement>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const hasMountedRef = useRef(false);
+
+  const updateIndicatorPosition = useCallback(() => {
+    const refs = {
+      fetch: tabFetchRef.current,
+      curl: tabCurlRef.current,
+      json: tabJsonRef.current,
+    };
+    const activeBtn = refs[activeTab];
+    const container = tabContainerRef.current;
+
+    if (activeBtn && container) {
+      const containerRect = container.getBoundingClientRect();
+      const buttonRect = activeBtn.getBoundingClientRect();
+
+      setIndicatorStyle({
+        left: buttonRect.left - containerRect.left,
+        width: buttonRect.width,
+      });
+    }
+  }, [activeTab]);
+
+  useLayoutEffect(() => {
+    updateIndicatorPosition();
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      if (indicatorRef.current) {
+        indicatorRef.current.style.transition = "none";
+        requestAnimationFrame(() => {
+          if (indicatorRef.current) {
+            indicatorRef.current.style.transition = "";
+          }
+        });
+      }
+    }
+  }, [updateIndicatorPosition]);
+
+  useEffect(() => {
+    const container = tabContainerRef.current;
+    if (!container) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      requestAnimationFrame(() => {
+        updateIndicatorPosition();
+      });
+    });
+
+    resizeObserver.observe(container);
+    return () => resizeObserver.disconnect();
+  }, [updateIndicatorPosition]);
 
   useEffect(() => {
     let isMounted = true;
@@ -218,45 +276,61 @@ curl -i -X GET "https://${hostUrl}/api/v1/public/daily-missions" \\
                 Code Examples
               </Text>
 
-              {/* Pill Tabs */}
-              <div className="bg-gray-100/80 p-1.5 rounded-2xl flex gap-1 mb-3">
+              {/* Smooth Sliding Pill Tabs Capsule (Identical to Create Page) */}
+              <div
+                ref={tabContainerRef}
+                className="relative bg-[#E5E7EB]/70 p-1 rounded-full flex gap-1 mb-3 overflow-hidden"
+              >
+                {/* Sliding Background Pill Indicator */}
+                <div
+                  ref={indicatorRef}
+                  className="absolute top-1 bottom-1 bg-[#7DB8E0] rounded-full transition-all duration-300 ease-out shadow-sm"
+                  style={{
+                    left: `${indicatorStyle.left}px`,
+                    width: `${indicatorStyle.width}px`,
+                  }}
+                />
+
                 <button
+                  ref={tabFetchRef}
                   onClick={() => setActiveTab("fetch")}
-                  className={`flex-1 py-2 px-3 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5 ${
+                  className={`relative z-10 flex-1 py-2 px-3 rounded-full font-bold text-xs transition-colors duration-300 flex items-center justify-center gap-1.5 cursor-pointer ${
                     activeTab === "fetch"
-                      ? "bg-[#7DB8E0] text-white shadow-sm"
+                      ? "text-white"
                       : "text-gray-600 hover:text-gray-900"
                   }`}
                   type="button"
                 >
                   <CodeBracketIcon className="w-4 h-4" />
-                  JavaScript (Fetch)
+                  <span>JavaScript (Fetch)</span>
                 </button>
 
                 <button
+                  ref={tabCurlRef}
                   onClick={() => setActiveTab("curl")}
-                  className={`flex-1 py-2 px-3 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5 ${
+                  className={`relative z-10 flex-1 py-2 px-3 rounded-full font-bold text-xs transition-colors duration-300 flex items-center justify-center gap-1.5 cursor-pointer ${
                     activeTab === "curl"
-                      ? "bg-[#7DB8E0] text-white shadow-sm"
+                      ? "text-white"
                       : "text-gray-600 hover:text-gray-900"
                   }`}
                   type="button"
                 >
                   <CommandLineIcon className="w-4 h-4" />
-                  cURL
+                  <span>cURL</span>
                 </button>
 
                 <button
+                  ref={tabJsonRef}
                   onClick={() => setActiveTab("json")}
-                  className={`flex-1 py-2 px-3 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5 ${
+                  className={`relative z-10 flex-1 py-2 px-3 rounded-full font-bold text-xs transition-colors duration-300 flex items-center justify-center gap-1.5 cursor-pointer ${
                     activeTab === "json"
-                      ? "bg-[#7DB8E0] text-white shadow-sm"
+                      ? "text-white"
                       : "text-gray-600 hover:text-gray-900"
                   }`}
                   type="button"
                 >
                   <DocumentTextIcon className="w-4 h-4" />
-                  JSON Response
+                  <span>JSON Response</span>
                 </button>
               </div>
 
