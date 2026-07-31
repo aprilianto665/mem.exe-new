@@ -117,13 +117,15 @@ export const ApiKeyPage: React.FC = () => {
     ? `${apiKey.slice(0, 12)}${"•".repeat(Math.max(0, apiKey.length - 16))}${apiKey.slice(-4)}`
     : "";
 
+  const displayedKey = showKey ? apiKey : maskedKey;
+
   const hostUrl = typeof window !== "undefined" ? window.location.host : "mem-exe.vercel.app";
 
   const jsSnippet = `// Example JavaScript Fetch for Portfolio Widget
 async function getDailyMissions() {
   const response = await fetch("https://${hostUrl}/api/v1/public/daily-missions", {
     headers: {
-      "x-api-key": "${apiKey || "YOUR_API_KEY"}"
+      "x-api-key": "${displayedKey || "YOUR_API_KEY"}"
     }
   });
   const data = await response.json();
@@ -132,7 +134,8 @@ async function getDailyMissions() {
 
   const curlSnippet = `# Terminal cURL Example
 curl -i -X GET "https://${hostUrl}/api/v1/public/daily-missions" \\
-  -H "x-api-key: ${apiKey || "YOUR_API_KEY"}"`;
+  -H "x-api-key: ${displayedKey || "YOUR_API_KEY"}"`;
+
 
   const jsonSnippet = `{
   "success": true,
