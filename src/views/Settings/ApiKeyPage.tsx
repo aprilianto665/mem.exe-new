@@ -6,7 +6,6 @@ import { Button } from "../../components/atoms/Button";
 import { getUserApiKeyAction } from "../../actions/user";
 import {
   ArrowLeftIcon,
-  KeyIcon,
   ClipboardDocumentIcon,
   CheckIcon,
   EyeIcon,
@@ -102,8 +101,8 @@ curl -i -X GET "https://${hostUrl}/api/v1/public/daily-missions" \\
 
   return (
     <PageTemplate>
-      <div className="flex flex-col pb-12">
-        {/* Top Bar Header */}
+      <div className="flex flex-col pb-32">
+        {/* Header */}
         <div className="flex-shrink-0 mb-6 relative flex items-center justify-center">
           <button
             onClick={() => navigate("/settings")}
@@ -112,66 +111,53 @@ curl -i -X GET "https://${hostUrl}/api/v1/public/daily-missions" \\
           >
             <ArrowLeftIcon strokeWidth={2.5} className="w-5 h-5" />
             <Text size="sm" weight="semibold">
-              Settings
+              Back
             </Text>
           </button>
 
           <Text size="2xl" weight="bold" className="text-gray-800">
-            API Key & Public Widget
+            Public API Key
           </Text>
         </div>
 
-        {/* Section 1: API Key Card */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-blue-50 text-[#7DB8E0] rounded-2xl">
-              <KeyIcon className="w-6 h-6" />
-            </div>
-            <div>
-              <Text size="lg" weight="bold" className="text-gray-800">
-                Personal API Key
-              </Text>
-              <Text size="xs" className="text-gray-500">
-                Stateless, HMAC-authenticated key for embedding habit progress widgets
-              </Text>
-            </div>
-          </div>
-
-          <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
-            <Text size="xs" weight="semibold" className="text-gray-400 uppercase tracking-wider mb-2 block">
-              Your API Key
+        {/* Content Container */}
+        <div className="space-y-4">
+          {/* Card 1: API Key Management */}
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+            <Text size="xs" weight="bold" className="text-gray-500 uppercase tracking-wider mb-4 block">
+              Personal API Key
             </Text>
 
             {isLoading ? (
-              <div className="h-11 bg-gray-200 animate-pulse rounded-xl" />
+              <div className="h-11 bg-gray-100 animate-pulse rounded-2xl" />
             ) : (
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2.5 font-mono text-sm text-gray-700 overflow-x-auto select-all shadow-inner">
+              <div className="bg-gray-50/80 rounded-2xl p-2.5 border border-gray-100 flex items-center gap-3">
+                <div className="flex-1 min-w-0 px-3 font-mono text-sm text-gray-800 truncate select-all">
                   {showKey ? apiKey : maskedKey}
                 </div>
 
                 <button
                   onClick={() => setShowKey(!showKey)}
-                  className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-white rounded-xl border border-gray-200 transition-all shadow-sm"
-                  title={showKey ? "Hide Key" : "Show Key"}
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-200/60 transition-colors"
+                  title={showKey ? "Hide API Key" : "Show API Key"}
                   type="button"
                 >
                   {showKey ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
                 </button>
 
                 <Button
-                  variant="secondary"
+                  variant="primary"
                   onClick={handleCopy}
-                  className="flex items-center gap-1.5 border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-medium py-2.5 px-4 text-sm shadow-sm"
+                  className="!py-2 !px-5 !text-sm !rounded-xl flex items-center gap-1.5"
                 >
                   {copied ? (
                     <>
-                      <CheckIcon className="w-4 h-4 text-emerald-500" />
-                      <span className="text-emerald-600">Copied</span>
+                      <CheckIcon className="w-4 h-4" />
+                      <span>Copied</span>
                     </>
                   ) : (
                     <>
-                      <ClipboardDocumentIcon className="w-4 h-4 text-gray-500" />
+                      <ClipboardDocumentIcon className="w-4 h-4" />
                       <span>Copy</span>
                     </>
                   )}
@@ -179,70 +165,67 @@ curl -i -X GET "https://${hostUrl}/api/v1/public/daily-missions" \\
               </div>
             )}
           </div>
-        </div>
 
-        {/* Section 2: Documentation Card */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-purple-50 text-purple-500 rounded-2xl">
-              <CodeBracketIcon className="w-6 h-6" />
-            </div>
+          {/* Card 2: Integration & API Documentation */}
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 space-y-6">
+            <Text size="xs" weight="bold" className="text-gray-500 uppercase tracking-wider block">
+              Integration & API Documentation
+            </Text>
+
+            {/* Base Endpoint URL */}
             <div>
-              <Text size="lg" weight="bold" className="text-gray-800">
-                Integration & API Documentation
-              </Text>
-              <Text size="xs" className="text-gray-500">
-                Read-only HTTP GET REST API specs for portfolio widgets
-              </Text>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {/* Endpoint Badge */}
-            <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-              <Text size="xs" weight="semibold" className="text-gray-400 uppercase tracking-wider mb-1.5 block">
+              <Text size="xs" weight="bold" className="text-gray-400 uppercase tracking-wider mb-2 block">
                 Base Endpoint URL (GET Only)
               </Text>
-              <div className="flex items-center gap-2">
-                <span className="bg-emerald-500 text-white font-mono text-xs px-2.5 py-1 rounded-lg font-bold">
+              <div className="bg-gray-50/80 p-3 rounded-2xl border border-gray-100 flex items-center gap-3">
+                <span className="bg-[#7DB8E0] text-white font-bold text-xs px-3 py-1 rounded-xl">
                   GET
                 </span>
-                <code className="text-sm font-mono text-gray-800 bg-white px-3 py-1 rounded-lg border border-gray-200 flex-1 overflow-x-auto">
+                <code className="font-mono text-sm text-gray-700 truncate flex-1">
                   https://{hostUrl}/api/v1/public/daily-missions
                 </code>
               </div>
             </div>
 
-            {/* Authentication Header Specs */}
-            <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-              <Text size="xs" weight="semibold" className="text-gray-400 uppercase tracking-wider mb-1.5 block">
+            {/* Authentication Methods */}
+            <div>
+              <Text size="xs" weight="bold" className="text-gray-400 uppercase tracking-wider mb-2 block">
                 Authentication Methods
               </Text>
-              <div className="space-y-2 text-xs text-gray-600">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-gray-700 min-w-24">HTTP Header:</span>
-                  <code className="bg-white px-2.5 py-1 rounded-md border border-gray-200 text-gray-800 font-mono">
+              <div className="bg-gray-50/80 p-4 rounded-2xl border border-gray-100 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <Text size="xs" weight="semibold" className="text-gray-600 min-w-28">
+                    HTTP Header:
+                  </Text>
+                  <code className="bg-white px-3 py-1.5 rounded-xl border border-gray-200 text-gray-800 font-mono text-xs truncate flex-1">
                     x-api-key: {showKey ? apiKey : maskedKey}
                   </code>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-gray-700 min-w-24">Query Param:</span>
-                  <code className="bg-white px-2.5 py-1 rounded-md border border-gray-200 text-gray-800 font-mono">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <Text size="xs" weight="semibold" className="text-gray-600 min-w-28">
+                    Query Param:
+                  </Text>
+                  <code className="bg-white px-3 py-1.5 rounded-xl border border-gray-200 text-gray-800 font-mono text-xs truncate flex-1">
                     ?api_key={showKey ? apiKey : maskedKey}
                   </code>
                 </div>
               </div>
             </div>
 
-            {/* Interactive Code Snippets Tabs */}
-            <div className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 shadow-md">
-              <div className="flex border-b border-gray-800 bg-gray-950/60 px-2 pt-2">
+            {/* Code Examples Section */}
+            <div>
+              <Text size="xs" weight="bold" className="text-gray-400 uppercase tracking-wider mb-3 block">
+                Code Examples
+              </Text>
+
+              {/* Pill Tabs */}
+              <div className="bg-gray-100/80 p-1.5 rounded-2xl flex gap-1 mb-3">
                 <button
                   onClick={() => setActiveTab("fetch")}
-                  className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-t-xl transition-colors ${
+                  className={`flex-1 py-2 px-3 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5 ${
                     activeTab === "fetch"
-                      ? "bg-gray-900 text-blue-400 border-t-2 border-blue-400"
-                      : "text-gray-400 hover:text-gray-200"
+                      ? "bg-[#7DB8E0] text-white shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
                   }`}
                   type="button"
                 >
@@ -252,10 +235,10 @@ curl -i -X GET "https://${hostUrl}/api/v1/public/daily-missions" \\
 
                 <button
                   onClick={() => setActiveTab("curl")}
-                  className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-t-xl transition-colors ${
+                  className={`flex-1 py-2 px-3 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5 ${
                     activeTab === "curl"
-                      ? "bg-gray-900 text-blue-400 border-t-2 border-blue-400"
-                      : "text-gray-400 hover:text-gray-200"
+                      ? "bg-[#7DB8E0] text-white shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
                   }`}
                   type="button"
                 >
@@ -265,10 +248,10 @@ curl -i -X GET "https://${hostUrl}/api/v1/public/daily-missions" \\
 
                 <button
                   onClick={() => setActiveTab("json")}
-                  className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-t-xl transition-colors ${
+                  className={`flex-1 py-2 px-3 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5 ${
                     activeTab === "json"
-                      ? "bg-gray-900 text-blue-400 border-t-2 border-blue-400"
-                      : "text-gray-400 hover:text-gray-200"
+                      ? "bg-[#7DB8E0] text-white shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
                   }`}
                   type="button"
                 >
@@ -277,7 +260,8 @@ curl -i -X GET "https://${hostUrl}/api/v1/public/daily-missions" \\
                 </button>
               </div>
 
-              <div className="p-4 overflow-x-auto">
+              {/* Code Box */}
+              <div className="bg-[#1E222D] rounded-2xl p-4 overflow-x-auto shadow-inner border border-gray-800">
                 <pre className="font-mono text-xs text-gray-200 leading-relaxed">
                   {activeTab === "fetch" && jsSnippet}
                   {activeTab === "curl" && curlSnippet}
