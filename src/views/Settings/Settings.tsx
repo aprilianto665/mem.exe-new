@@ -11,6 +11,7 @@ import {
   SparklesIcon,
   CheckIcon,
   GlobeAltIcon,
+  KeyIcon,
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -20,6 +21,8 @@ import { useLogout } from '../../hooks/useLogout';
 import { useSettingsStore } from '../../store/settingsStore';
 import { updateUserSettings, SettingsError } from '../../services/settingsService';
 import toast from 'react-hot-toast';
+
+
 
 export const Settings = () => {
   const { handleLogout } = useLogout();
@@ -202,6 +205,7 @@ export const Settings = () => {
               Execution Mode
             </Text>
           </div>
+
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-4 flex items-center justify-between opacity-60">
               <div className="flex items-center gap-4">
@@ -294,8 +298,29 @@ export const Settings = () => {
               App
             </Text>
           </div>
-          <AboutSection />
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <Link
+              to="/settings/api-key"
+              className="p-4 flex items-center justify-between group active:bg-gray-50 transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="text-[#7DB8E0]">
+                  <KeyIcon className="w-6 h-6" />
+                </div>
+                <Text size="base" weight="semibold" className="text-gray-700">
+                  Public API Key & Widget
+                </Text>
+              </div>
+              <ChevronRightIcon strokeWidth={2} className="w-5 h-5 text-gray-400" />
+            </Link>
+
+            <div className="border-t border-gray-50 mx-4" />
+
+            <AboutSection noCard={true} />
+          </div>
         </div>
+
+
 
         <div className="mt-8">
           <Button

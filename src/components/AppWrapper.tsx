@@ -15,6 +15,8 @@ import { EditFullName } from '../views/Settings/EditFullName';
 import { EditUsername } from '../views/Settings/EditUsername';
 import { ChangePassword } from '../views/Settings/ChangePassword';
 import { Timezone } from '../views/Settings/Timezone';
+import { ApiKeyPage } from '../views/Settings/ApiKeyPage';
+
 import { Login } from '../views/auth/Login';
 import { SignUp } from '../views/auth/SignUp';
 import { EmailVerification } from '../views/auth/EmailVerification';
@@ -40,6 +42,8 @@ export default function AppWrapper() {
             <Route path="manage/edit" element={<EditMission />} />
             <Route path="profile" element={<MyAccount />} />
             <Route path="timezone" element={<Timezone />} />
+            <Route path="api-key" element={<ApiKeyPage />} />
+
             <Route path="profile/edit-fullname" element={<EditFullName />} />
             <Route path="profile/edit-username" element={<EditUsername />} />
             <Route

@@ -3,5 +3,7 @@ export interface CollapsibleSectionProps {
   icon: React.ReactNode;
   children: React.ReactNode;
   defaultExpanded?: boolean;
+  noCard?: boolean;
 }
+
 

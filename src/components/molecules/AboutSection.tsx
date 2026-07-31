@@ -2,12 +2,17 @@ import { CollapsibleSection } from './CollapsibleSection';
 import { Text } from '../atoms/Text';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
-export const AboutSection = () => {
+interface AboutSectionProps {
+  noCard?: boolean;
+}
+
+export const AboutSection = ({ noCard }: AboutSectionProps) => {
   return (
     <CollapsibleSection
       title="About"
       icon={<InformationCircleIcon className="w-6 h-6" />}
       defaultExpanded={false}
+      noCard={noCard}
     >
       <div className="space-y-3 px-4">
         <Text size="base" className="text-gray-700 leading-relaxed">

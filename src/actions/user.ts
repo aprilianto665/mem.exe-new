@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
+import { generateUserApiKey } from "@/lib/apiKey";
+
 
 export async function getAuthUserId() {
   const session = await getServerSession(authOptions);
@@ -260,3 +262,9 @@ export async function updateFullNameAction(fullName: string) {
 
   return { status: "success", message: "Full name updated successfully" };
 }
+
+export async function getUserApiKeyAction(): Promise<string> {
+  const userId = await getAuthUserId();
+  return generateUserApiKey(userId);
+}
+

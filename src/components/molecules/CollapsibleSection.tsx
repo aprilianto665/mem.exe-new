@@ -8,6 +8,7 @@ export const CollapsibleSection = ({
   icon,
   children,
   defaultExpanded = false,
+  noCard = false,
 }: CollapsibleSectionProps) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -15,26 +16,32 @@ export const CollapsibleSection = ({
     setIsExpanded(!isExpanded);
   };
 
-  return (
-    <div
-      className="bg-white rounded-3xl border border-gray-200 overflow-hidden"
-      style={{
+  const wrapperClass = noCard
+    ? ""
+    : "bg-white rounded-3xl border border-gray-200 overflow-hidden";
+
+  const wrapperStyle = noCard
+    ? {}
+    : {
         boxShadow:
-          '0 4px 6px -1px rgba(125, 184, 224, 0.2), 0 2px 4px -1px rgba(125, 184, 224, 0.1)',
-      }}
-    >
+          "0 4px 6px -1px rgba(125, 184, 224, 0.2), 0 2px 4px -1px rgba(125, 184, 224, 0.1)",
+      };
+
+  return (
+    <div className={wrapperClass} style={wrapperStyle}>
       <button
         onClick={toggleExpanded}
         className="w-full flex items-center justify-between p-4 transition-colors duration-200 hover:bg-gray-50 active:bg-gray-100 cursor-pointer"
         aria-expanded={isExpanded}
         aria-label={`Toggle ${title} section`}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div className="text-[#7DB8E0] flex-shrink-0">{icon}</div>
           <Text size="base" weight="semibold" className="text-gray-700">
             {title}
           </Text>
         </div>
+
         <div className="text-gray-400 flex-shrink-0 transition-transform duration-200">
           {isExpanded ? (
             <ChevronDownIcon className="w-5 h-5" />
