@@ -1409,3 +1409,126 @@ export async function fetchDailyTimelineAction(dateStr: string, timezoneArg?: st
     milestones: matchedMilestones,
   };
 }
+
+export async function fetchPublicDailyMissionsAction(userId: string) {
+  let timezone = "Asia/Jakarta";
+  try {
+    const userSettings = await prisma.user_settings.findUnique({
+      where: { user_id: userId },
+    });
+    if (userSettings?.timezone) {
+      timezone = userSettings.timezone;
+    }
+  } catch (e) {
+    // fallback timezone
+  }
+
+  const todayStr = getLocalDateString(new Date(), timezone);
+  const todayDate = new Date(todayStr + "T00:00:00Z");
+
+  const rawMissions = await prisma.missions.findMany({
+    where: { user_id: userId },
+    include: {
+      mission_daily_progress: {
+        where: { mission_date: todayDate },
+      },
+    },
+    orderBy: { created_at: "desc" },
+  });
+
+  const historyRows = await prisma.mission_daily_progress.findMany({
+    where: { missions: { user_id: userId } },
+    orderBy: { mission_date: "desc" },
+  });
+
+  const formattedData: any[] = [];
+
+  for (const m of rawMissions) {
+    const completedDaysCount = historyRows.filter(
+      (h: prisma_mission_daily_progress) =>
+        h.mission_id === m.id &&
+        (h.status === "completed" || h.minutes_done >= h.required_minutes)
+    ).length;
+
+    const status = checkAndUpdateMissionStatus(
+      m.id,
+      m.status,
+      m.type,
+      m.target_days,
+      completedDaysCount
+    );
+
+    if (status !== "active") continue;
+
+    if (
+      !isMissionScheduledUsecaseTS(
+        status,
+        m.id,
+        m.start_date,
+        m.days_of_week,
+        m.type,
+        m.target_days,
+        todayDate,
+        todayDate,
+        historyRows,
+        timezone
+      )
+    ) {
+      continue;
+    }
+
+    const currentDay = calculateCurrentDayTS(
+      m.id,
+      m.start_date,
+      m.days_of_week,
+      m.type,
+      m.target_days,
+      historyRows,
+      todayDate,
+      timezone,
+      status
+    );
+
+    const [streak] = computeStreakAndMissedTS(
+      m.id,
+      m.start_date,
+      m.days_of_week,
+      m.type,
+      m.target_days,
+      historyRows,
+      todayDate,
+      timezone,
+      status
+    );
+
+    const progressToday = m.mission_daily_progress[0];
+    const minutesDone = progressToday ? progressToday.minutes_done : 0;
+    const requiredMinutes = progressToday ? progressToday.required_minutes : m.current_minutes_per_day;
+    const isCompleted = progressToday
+      ? progressToday.status === "completed" || minutesDone >= requiredMinutes
+      : false;
+
+    formattedData.push({
+      id: m.id,
+      title: m.title,
+      description: m.description || "",
+      type: m.type,
+      current_day: currentDay,
+      target_days: m.target_days || null,
+      target_minutes: requiredMinutes,
+      minutes_done: minutesDone,
+      progress_percentage: Math.min(
+        100,
+        Math.round((minutesDone / (requiredMinutes || 1)) * 100)
+      ),
+      is_completed: isCompleted,
+      streak: streak,
+    });
+  }
+
+  return {
+    todayStr,
+    formattedData,
+  };
+}
+
