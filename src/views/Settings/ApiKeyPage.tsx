@@ -151,6 +151,8 @@ curl -i -X GET "https://${hostUrl}/api/v1/public/daily-missions" \\
       "title": "100 Days Coding Challenge",
       "description": "Daily coding habit",
       "type": "challenge",
+      "current_day": 11,
+      "target_days": 100,
       "target_minutes": 60,
       "minutes_done": 45,
       "progress_percentage": 75,
@@ -159,6 +161,7 @@ curl -i -X GET "https://${hostUrl}/api/v1/public/daily-missions" \\
     }
   ]
 }`;
+
 
   return (
     <PageTemplate>

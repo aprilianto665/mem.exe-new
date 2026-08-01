@@ -11,6 +11,30 @@ function getCorsHeaders() {
   };
 }
 
+/**
+ * Calculates current day number since start_date.
+ */
+function getMissionCurrentDay(
+  startDate: Date | null,
+  targetDays: number | null,
+  todayDate: Date
+): number {
+  if (!startDate) return 1;
+  const start = new Date(startDate);
+  start.setUTCHours(0, 0, 0, 0);
+  const current = new Date(todayDate);
+  current.setUTCHours(0, 0, 0, 0);
+
+  const diffTime = current.getTime() - start.getTime();
+  if (diffTime < 0) return 1;
+
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  if (targetDays !== null && targetDays > 0) {
+    return Math.min(targetDays, Math.max(1, diffDays));
+  }
+  return Math.max(1, diffDays);
+}
+
 // 1. Handler OPTIONS (Preflight Request for CORS)
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -83,6 +107,8 @@ export async function GET(request: NextRequest) {
         description: true,
         type: true,
         current_minutes_per_day: true,
+        start_date: true,
+        target_days: true,
         streak: true,
         mission_daily_progress: {
           where: {
@@ -108,11 +134,15 @@ export async function GET(request: NextRequest) {
         ? todayProgress.status === "completed" || minutesDone >= requiredMinutes
         : false;
 
+      const currentDay = getMissionCurrentDay(m.start_date, m.target_days, todayDate);
+
       return {
         id: m.id,
         title: m.title,
         description: m.description || "",
         type: m.type,
+        current_day: currentDay,
+        target_days: m.target_days || null,
         target_minutes: requiredMinutes,
         minutes_done: minutesDone,
         progress_percentage: Math.min(
