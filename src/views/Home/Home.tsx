@@ -60,8 +60,7 @@ export const Home = () => {
     );
   }
 
-  const today = new Date();
-  const activeTodayMissions = missions.filter(m => m.status === 'active' && isMissionScheduled(m, today));
+  const activeTodayMissions = missions.filter(m => m.status !== 'canceled');
 
   // Mission list handlers
   const handleStartMission = async (missionId: string) => {

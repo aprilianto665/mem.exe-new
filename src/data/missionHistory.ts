@@ -128,21 +128,23 @@ const doesMilestoneDeadlineMatch = (deadline: string | undefined, date: Date) =>
 const parseDateStringSafely = (dateStr: string | undefined): Date => {
   if (!dateStr) return new Date();
   
-  // If it's a YYYY-MM-DD string
+  // If it's a simple YYYY-MM-DD string
   if (dateStr.length === 10 && dateStr.includes('-')) {
     const parts = dateStr.split('-');
     const year = parseInt(parts[0], 10);
     const month = parseInt(parts[1], 10) - 1; // 0-indexed month
     const day = parseInt(parts[2], 10);
-    return new Date(year, month, day);
+    if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+      return new Date(year, month, day);
+    }
   }
   
-  // ISO string fallback
+  // ISO string fallback - convert to local midnight Date
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) {
     return new Date();
   }
-  return d;
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 };
 
 /**
@@ -191,7 +193,7 @@ export const isMissionScheduled = (mission: Mission, date: Date): boolean => {
 
   // Check challenge duration bounds
   if (mission.commitmentType === 'challenge' && mission.duration) {
-    if (mission.status === 'completed' || (mission.currentDays && mission.currentDays >= mission.duration)) {
+    if (mission.status === 'completed' || (mission.currentDays && mission.currentDays > mission.duration)) {
       if (!isBeforeChallengeEnd(date, start, mission.duration, mission.selectedDays)) {
         return false;
       }

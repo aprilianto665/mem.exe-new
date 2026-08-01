@@ -674,7 +674,7 @@ export async function fetchDailyMissionsAction(timezoneArg?: string) {
       completedDaysCount
     );
 
-    if (status !== "active") continue;
+    if (m.status === "cancelled") continue;
 
     if (
       !isMissionScheduledUsecaseTS(
@@ -1458,7 +1458,7 @@ export async function fetchPublicDailyMissionsAction(userId: string) {
       completedDaysCount
     );
 
-    if (status !== "active") continue;
+    if (m.status === "cancelled") continue;
 
     if (
       !isMissionScheduledUsecaseTS(
