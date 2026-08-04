@@ -897,6 +897,12 @@ export async function addMissionAction(payload: {
     throw new Error("At least one day of the week must be selected");
   }
 
+  const settings = await getUserSettingsAction();
+  const timezone = settings.timezone || "Asia/Jakarta";
+
+  const todayStr = getLocalDateString(new Date(), timezone);
+  const startDate = new Date(todayStr + "T00:00:00Z");
+
   const mission = await prisma.missions.create({
     data: {
       user_id: userId,
@@ -908,7 +914,7 @@ export async function addMissionAction(payload: {
       target_days: payload.duration || null,
       days_of_week: payload.days_of_week,
       status: "active",
-      start_date: new Date(),
+      start_date: startDate,
     },
   });
 
