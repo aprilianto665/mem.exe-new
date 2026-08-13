@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { generateUserApiKey } from "@/lib/apiKey";
-
+import { resolveHangingTimers } from "@/actions/missions";
 
 export async function getAuthUserId() {
   const session = await getServerSession(authOptions);
@@ -18,6 +18,7 @@ export async function getAuthUserId() {
 
 export async function getCurrentUserAction() {
   const userId = await getAuthUserId();
+  await resolveHangingTimers(userId);
 
   const user = await prisma.users.findUnique({
     where: { id: userId },

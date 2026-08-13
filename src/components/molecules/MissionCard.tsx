@@ -15,7 +15,7 @@ const getCommitmentTypeLabel = (type: string): string => {
 export const MissionCard = ({ 
   mission 
 }: MissionCardProps) => {
-  const { startTimer, pauseTimer } = useMissionStore();
+  const { startTimer, pauseTimer, fetchDailyMissions } = useMissionStore();
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const isRunning = !!mission.timerStartedAt;
 
@@ -25,8 +25,27 @@ export const MissionCard = ({
       return;
     }
 
-    const calculateElapsed = () => {
+    const calculateElapsed = async () => {
       const startMs = new Date(mission.timerStartedAt!).getTime();
+      const startDate = new Date(startMs);
+      const now = new Date();
+
+      const isDifferentDay =
+        startDate.getDate() !== now.getDate() ||
+        startDate.getMonth() !== now.getMonth() ||
+        startDate.getFullYear() !== now.getFullYear();
+
+      if (isDifferentDay) {
+        toast.error('Timer dihentikan otomatis karena pergantian hari');
+        try {
+          await pauseTimer(mission.id, 0);
+        } catch (e) {
+          // ignore error if already stopped
+        }
+        await fetchDailyMissions();
+        return;
+      }
+
       const diffSecs = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
       setElapsedSeconds(diffSecs);
     };
@@ -35,7 +54,7 @@ export const MissionCard = ({
     const interval = setInterval(calculateElapsed, 1000);
 
     return () => clearInterval(interval);
-  }, [mission.timerStartedAt]);
+  }, [mission.timerStartedAt, mission.id, pauseTimer, fetchDailyMissions]);
 
   const baseMinutes = mission.loggedMinutes || 0;
   const elapsedMinutes = Math.floor(elapsedSeconds / 60);

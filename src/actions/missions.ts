@@ -33,6 +33,92 @@ function getLocalDateString(date: Date, tz: string): string {
   }
 }
 
+// Helper to get 23:59:59.999 UTC Date for a given dateStr (YYYY-MM-DD) in specified timezone
+function getEndOfDayInTimezone(dateStr: string, tz: string): Date {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const utcCandidate = Date.UTC(year, month - 1, day, 23, 59, 59, 999);
+
+  try {
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+    const parts = formatter.formatToParts(new Date(utcCandidate));
+    const pYear = parseInt(parts.find((p) => p.type === "year")!.value);
+    const pMonth = parseInt(parts.find((p) => p.type === "month")!.value);
+    const pDay = parseInt(parts.find((p) => p.type === "day")!.value);
+    let pHour = parseInt(parts.find((p) => p.type === "hour")!.value);
+    if (pHour === 24) pHour = 0;
+    const pMin = parseInt(parts.find((p) => p.type === "minute")!.value);
+    const pSec = parseInt(parts.find((p) => p.type === "second")!.value);
+
+    const localTimestampOfCandidate = Date.UTC(pYear, pMonth - 1, pDay, pHour, pMin, pSec, 999);
+    const offsetMs = localTimestampOfCandidate - utcCandidate;
+
+    const targetLocalTimestamp = Date.UTC(year, month - 1, day, 23, 59, 59, 999);
+    return new Date(targetLocalTimestamp - offsetMs);
+  } catch (e) {
+    return new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
+  }
+}
+
+export async function resolveHangingTimers(userId: string, timezoneArg?: string) {
+  let timezone = timezoneArg;
+  if (!timezone) {
+    const settings = await getUserSettingsAction();
+    timezone = settings.timezone;
+  }
+
+  const todayStr = getLocalDateString(new Date(), timezone);
+  const todayDate = new Date(todayStr + "T00:00:00Z");
+
+  const hangingRecords = await prisma.mission_daily_progress.findMany({
+    where: {
+      missions: { user_id: userId },
+      timer_started_at: { not: null },
+      mission_date: { lt: todayDate },
+    },
+    include: {
+      missions: true,
+    },
+  });
+
+  for (const record of hangingRecords) {
+    if (!record.timer_started_at) continue;
+
+    const recordDateStr = getLocalDateString(record.mission_date, timezone);
+    const endOfDay = getEndOfDayInTimezone(recordDateStr, timezone);
+
+    let additionalMinutes = 0;
+    if (endOfDay.getTime() > record.timer_started_at.getTime()) {
+      const elapsedMs = endOfDay.getTime() - record.timer_started_at.getTime();
+      additionalMinutes = Math.floor(elapsedMs / (1000 * 60));
+    }
+
+    const newMinutesDone = record.minutes_done + additionalMinutes;
+    const reqMins = record.required_minutes || record.missions.current_minutes_per_day;
+    const isCompleted = newMinutesDone >= reqMins;
+    const newStatus = isCompleted ? "completed" : "missed";
+
+    await prisma.mission_daily_progress.update({
+      where: { id: record.id },
+      data: {
+        minutes_done: newMinutesDone,
+        timer_started_at: null,
+        status: newStatus,
+        updated_at: new Date(),
+      },
+    });
+  }
+}
+
+
 // Helper to determine if a mission is active and scheduled on a target date
 function isMissionScheduledInTS(
   startDate: Date | null,
@@ -523,6 +609,8 @@ export async function fetchMissionsAction(
   const settings = await getUserSettingsAction();
   const timezone = timezoneArg || settings.timezone;
 
+  await resolveHangingTimers(userId, timezone);
+
   const todayStr = getLocalDateString(new Date(), timezone);
   const todayDate = new Date(todayStr + "T00:00:00Z");
 
@@ -637,6 +725,8 @@ export async function fetchDailyMissionsAction(timezoneArg?: string) {
   const userId = await getAuthUserId();
   const settings = await getUserSettingsAction();
   const timezone = timezoneArg || settings.timezone;
+
+  await resolveHangingTimers(userId, timezone);
 
   const todayStr = getLocalDateString(new Date(), timezone);
   const todayDate = new Date(todayStr + "T00:00:00Z");
@@ -763,6 +853,8 @@ export async function fetchMissionDetailAction(missionId: string, timezoneArg?: 
   const userId = await getAuthUserId();
   const settings = await getUserSettingsAction();
   const timezone = timezoneArg || settings.timezone;
+
+  await resolveHangingTimers(userId, timezone);
 
   const todayStr = getLocalDateString(new Date(), timezone);
   const todayDate = new Date(todayStr + "T00:00:00Z");
@@ -986,12 +1078,27 @@ export async function logMinutesAction(
   const settings = await getUserSettingsAction();
   const timezone = timezoneArg || settings.timezone;
 
+  await resolveHangingTimers(userId, timezone);
+
   const todayStr = getLocalDateString(new Date(), timezone);
   const todayDate = new Date(todayStr + "T00:00:00Z");
 
   const m = await prisma.missions.findUnique({ where: { id } });
   if (!m || m.user_id !== userId) {
     throw new Error("Unauthorized or mission not found");
+  }
+
+  const existing = await prisma.mission_daily_progress.findUnique({
+    where: {
+      mission_id_mission_date: {
+        mission_id: id,
+        mission_date: todayDate,
+      },
+    },
+  });
+
+  if (!existing?.timer_started_at) {
+    return { status: "success" };
   }
 
   await prisma.$transaction(async (tx: any) => {
@@ -1047,6 +1154,8 @@ export async function fetchTimelineDataAction(timezoneArg?: string) {
   const userId = await getAuthUserId();
   const settings = await getUserSettingsAction();
   const timezone = timezoneArg || settings.timezone;
+
+  await resolveHangingTimers(userId, timezone);
 
   const todayStr = getLocalDateString(new Date(), timezone);
   const todayDate = new Date(todayStr + "T00:00:00Z");
