@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from 'react';
 import { PageTemplate } from '../../components/templates/PageTemplate';
 import { MissionList } from '../../components/organisms/MissionList';

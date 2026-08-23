@@ -1,5 +1,7 @@
+"use client";
+
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { PageTemplate } from '../../components/templates/PageTemplate';
 import { Text } from '../../components/atoms/Text';
 import { Input } from '../../components/atoms/Input';
@@ -18,7 +20,7 @@ import {
 import toast from 'react-hot-toast';
 
 export const Todo = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { 
     milestones, 
     error,
@@ -144,7 +146,7 @@ export const Todo = () => {
         Set long-term goals to organize your discipline.
       </Text>
       <button 
-        onClick={() => navigate('/create')} 
+        onClick={() => router.push('/create')} 
         className="flex items-center justify-center bg-[#7DB8E0] hover:bg-[#6CA7CE] text-white px-6 py-2.5 rounded-2xl cursor-pointer text-sm font-bold transition-all mx-auto"
       >
         Create To Do

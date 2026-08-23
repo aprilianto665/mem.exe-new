@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Input } from '../atoms/Input';
 import { Textarea } from '../atoms/Textarea';
 import { FormSection } from '../molecules/FormSection';
@@ -15,7 +15,7 @@ import { useMissionStore } from '../../store/missionStore';
 import toast from 'react-hot-toast';
 
 export const CreateMissionForm = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { addMission } = useMissionStore();
 
   const [missionName, setMissionName] = useState('');
@@ -49,7 +49,7 @@ export const CreateMissionForm = () => {
     });
 
     toast.success('Mission created and activated successfully!');
-    navigate('/missions');
+    router.push('/missions');
   };
 
   return (

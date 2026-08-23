@@ -1,4 +1,6 @@
-import { useNavigate } from 'react-router-dom';
+"use client";
+
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { PageTemplate } from '../../components/templates/PageTemplate';
 import { Text } from '../../components/atoms/Text';
@@ -8,7 +10,7 @@ import { FormSection } from '../../components/molecules/FormSection';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 export const EditFullName = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [fullName, setFullName] = useState('Cyrene');
 
   return (
@@ -17,7 +19,7 @@ export const EditFullName = () => {
         {/* Header */}
         <div className="flex-shrink-0 mb-6 relative flex items-center justify-center">
           <button
-            onClick={() => navigate('/settings/profile')}
+            onClick={() => router.push('/settings/profile')}
             className="absolute left-0 flex items-center gap-1.5 text-gray-600 hover:text-gray-800 cursor-pointer px-2 py-1 rounded-xl hover:bg-white/50"
           >
             <ArrowLeftIcon strokeWidth={2.5} className="w-5 h-5" />

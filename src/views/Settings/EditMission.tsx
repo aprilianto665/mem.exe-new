@@ -1,5 +1,7 @@
+"use client";
+
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { PageTemplate } from "../../components/templates/PageTemplate";
 import { Text } from "../../components/atoms/Text";
 import { Button } from "../../components/atoms/Button";
@@ -18,7 +20,7 @@ import { MinutesSlider } from "../../components/molecules/MinutesSlider";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 export const EditMission = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [missionName, setMissionName] = useState("");
   const [missionReason, setMissionReason] = useState("");
@@ -49,7 +51,7 @@ export const EditMission = () => {
         {/* Header */}
         <div className="flex-shrink-0 mb-6 relative flex items-center justify-center">
           <button
-            onClick={() => navigate("/settings/manage")}
+            onClick={() => router.push("/settings/manage")}
             className="absolute left-0 flex items-center gap-1.5 text-gray-600 hover:text-gray-800 cursor-pointer px-2 py-1 rounded-xl hover:bg-white/50"
           >
             <ArrowLeftIcon strokeWidth={2.5} className="w-5 h-5" />

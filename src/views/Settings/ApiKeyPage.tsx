@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { PageTemplate } from "../../components/templates/PageTemplate";
 import { Text } from "../../components/atoms/Text";
 import { Button } from "../../components/atoms/Button";
@@ -17,7 +19,7 @@ import {
 import toast from "react-hot-toast";
 
 export const ApiKeyPage: React.FC = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [apiKey, setApiKey] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showKey, setShowKey] = useState<boolean>(false);
@@ -169,7 +171,7 @@ curl -i -X GET "https://${hostUrl}/api/v1/public/daily-missions" \\
         {/* Header */}
         <div className="flex-shrink-0 mb-6 relative flex items-center justify-center">
           <button
-            onClick={() => navigate("/settings")}
+            onClick={() => router.push("/settings")}
             className="absolute left-0 flex items-center gap-1.5 text-gray-600 hover:text-gray-800 cursor-pointer px-2 py-1 rounded-xl hover:bg-white/50 transition-colors"
             type="button"
           >

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { register, AuthError } from '../services/authService';
 import {
@@ -20,7 +20,7 @@ interface UseSignUpReturn {
 }
 
 export const useSignUp = (): UseSignUpReturn => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const setEmailForVerification = useAuthStore(
     (state) => state.setEmailForVerification,
   );
@@ -83,7 +83,7 @@ export const useSignUp = (): UseSignUpReturn => {
       const response = await register({ email, username, password });
       toast.success(response.message);
       setEmailForVerification(email);
-      navigate('/verify-email');
+      router.push('/verify-email');
     } catch (error) {
       if (error instanceof AuthError) {
         setBackendError(error.message);

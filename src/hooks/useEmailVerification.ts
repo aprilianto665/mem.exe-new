@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import {
   generateVerificationCode,
@@ -28,7 +28,7 @@ interface UseEmailVerificationReturn {
 }
 
 export const useEmailVerification = (): UseEmailVerificationReturn => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const emailForVerification = useAuthStore(
     (state) => state.emailForVerification,
   );
@@ -42,7 +42,7 @@ export const useEmailVerification = (): UseEmailVerificationReturn => {
 
   useEffect(() => {
     if (!emailForVerification) {
-      navigate('/signup', { replace: true });
+      router.replace('/signup');
       return;
     }
 
@@ -74,7 +74,7 @@ export const useEmailVerification = (): UseEmailVerificationReturn => {
     };
 
     void generateCode();
-  }, [emailForVerification, navigate]);
+  }, [emailForVerification, router]);
 
   const handleCodeChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value.slice(0, 6);
@@ -88,7 +88,7 @@ export const useEmailVerification = (): UseEmailVerificationReturn => {
     event.preventDefault();
 
     if (!emailForVerification) {
-      navigate('/signup', { replace: true });
+      router.replace('/signup');
       return;
     }
 
@@ -122,7 +122,7 @@ export const useEmailVerification = (): UseEmailVerificationReturn => {
       setSuccessMessage(response.message);
       toast.success(response.message);
       setTimeout(() => {
-        navigate('/login', { replace: true });
+        router.replace('/login');
       }, 2000);
     } catch (error) {
       if (error instanceof AuthError) {

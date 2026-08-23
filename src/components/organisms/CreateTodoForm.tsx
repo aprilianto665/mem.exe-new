@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Input } from '../atoms/Input';
 import { Textarea } from '../atoms/Textarea';
 import { FormSection } from '../molecules/FormSection';
@@ -9,7 +9,7 @@ import { useMissionStore } from '../../store/missionStore';
 import toast from 'react-hot-toast';
 
 export const CreateTodoForm = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { addMilestone } = useMissionStore();
 
   const [milestoneTitle, setMilestoneTitle] = useState('');
@@ -31,7 +31,7 @@ export const CreateTodoForm = () => {
       });
 
       toast.success(`Objective "${milestoneTitle}" added!`);
-      navigate('/todo');
+      router.push('/todo');
     } catch (err: any) {
       toast.error('Connection error. Unable to create objective.');
     }

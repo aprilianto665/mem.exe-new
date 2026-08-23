@@ -1,5 +1,7 @@
+"use client";
+
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Logo } from '../../components/atoms/Logo';
 import { Input } from '../../components/atoms/Input';
@@ -10,7 +12,7 @@ import { googleLogin, AuthError } from '../../services/authService';
 import { setAuthToken } from '../../services/tokenService';
 
 export const Login = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const {
     values,
     fieldErrors,
@@ -45,7 +47,7 @@ export const Login = () => {
       const response = await googleLogin({ credential: idToken, signUp: isSignUp });
       setAuthToken(response.token);
       toast.success(response.message || 'Login successful');
-      navigate('/missions', { replace: true });
+      router.replace('/missions');
     } catch (error) {
       if (error instanceof AuthError) {
         if (error.message === 'email not registered') {
@@ -209,7 +211,7 @@ export const Login = () => {
               Don't have an account?{' '}
               <button
                 type="button"
-                onClick={() => navigate('/signup')}
+                onClick={() => router.push('/signup')}
                 className="text-[#7DB8E0] hover:text-[#6BA8D0] font-semibold transition-colors cursor-pointer"
               >
                 Sign Up

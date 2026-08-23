@@ -1,6 +1,6 @@
 import { Text } from '../atoms/Text';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useUserStore } from '../../store/userStore';
 
 export const ProfileSection = () => {
@@ -36,7 +36,7 @@ export const ProfileSection = () => {
       </div>
 
       <Link 
-        to="/settings/profile"
+        href="/settings/profile"
         className="relative p-2 text-gray-400 hover:text-[#7DB8E0] transition-colors cursor-pointer"
         title="My Account"
       >

@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { PageTemplate } from "../../components/templates/PageTemplate";
 import { Text } from "../../components/atoms/Text";
 import { Input } from "../../components/atoms/Input";
@@ -18,7 +20,7 @@ import {
 } from "../../utils/missionDisplay";
 
 export const ManageMission = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { missions, fetchMissions, isLoading } = useMissionStore();
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,7 +45,7 @@ export const ManageMission = () => {
         {/* Fixed Header Section */}
         <div className="flex-shrink-0 mb-6 relative flex items-center justify-center">
           <button
-            onClick={() => navigate("/settings")}
+            onClick={() => router.push("/settings")}
             className="absolute left-0 flex items-center gap-1 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
           >
             <ArrowLeftIcon strokeWidth={2} className="w-5 h-5" />
@@ -147,7 +149,7 @@ export const ManageMission = () => {
                 <button
                   key={mission.id}
                   type="button"
-                  onClick={() => navigate(`/settings/manage/${mission.id}`)}
+                  onClick={() => router.push(`/settings/manage/${mission.id}`)}
                   aria-label={`View details for ${mission.name}`}
                   className="relative w-full flex items-center gap-3 overflow-hidden bg-white rounded-2xl pl-5 pr-4 py-4 border border-gray-100 shadow-sm text-left hover:bg-gray-50 transition-colors cursor-pointer"
                 >

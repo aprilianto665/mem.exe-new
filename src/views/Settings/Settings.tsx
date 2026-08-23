@@ -1,3 +1,5 @@
+"use client";
+
 import { PageTemplate } from '../../components/templates/PageTemplate';
 import { Text } from '../../components/atoms/Text';
 import { AboutSection } from '../../components/molecules/AboutSection';
@@ -13,7 +15,7 @@ import {
   GlobeAltIcon,
   KeyIcon,
 } from '@heroicons/react/24/outline';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Switch } from '../../components/atoms/Switch';
 import { Input } from '../../components/atoms/Input';
@@ -153,7 +155,7 @@ export const Settings = () => {
           </div>
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <Link 
-              to="/settings/manage"
+              href="/settings/manage"
               className="p-4 flex items-center justify-between group active:bg-gray-50 transition-all"
             >
               <div className="flex items-center gap-4">
@@ -176,7 +178,7 @@ export const Settings = () => {
           </div>
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <Link
-              to="/settings/timezone"
+              href="/settings/timezone"
               className="p-4 flex items-center justify-between group active:bg-gray-50 transition-all"
             >
               <div className="flex items-center gap-4">
@@ -300,7 +302,7 @@ export const Settings = () => {
           </div>
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <Link
-              to="/settings/api-key"
+              href="/settings/api-key"
               className="p-4 flex items-center justify-between group active:bg-gray-50 transition-all"
             >
               <div className="flex items-center gap-4">

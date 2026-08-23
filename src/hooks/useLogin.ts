@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { login, AuthError } from '../services/authService';
 import {
@@ -26,7 +26,7 @@ const UNVERIFIED_EMAIL_MESSAGE =
   'Email not verified. Please verify your email before logging in';
 
 export const useLogin = (): UseLoginReturn => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const setEmailForVerification = useAuthStore(
     (state) => state.setEmailForVerification,
   );
@@ -85,7 +85,7 @@ export const useLogin = (): UseLoginReturn => {
       const response = await login(validationResult.data);
       setAuthToken(response.token);
       toast.success(response.message || 'Login successful');
-      navigate('/missions', { replace: true });
+      router.replace('/missions');
     } catch (error) {
       if (error instanceof AuthError) {
         if (
@@ -93,7 +93,7 @@ export const useLogin = (): UseLoginReturn => {
           error.message === UNVERIFIED_EMAIL_MESSAGE
         ) {
           setEmailForVerification(values.email);
-          navigate('/verify-email', { replace: true });
+          router.replace('/verify-email');
           return;
         }
 

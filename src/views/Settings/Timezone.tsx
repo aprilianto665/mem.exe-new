@@ -1,5 +1,7 @@
+"use client";
+
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { PageTemplate } from '../../components/templates/PageTemplate';
 import { Text } from '../../components/atoms/Text';
 import { Input } from '../../components/atoms/Input';
@@ -37,7 +39,7 @@ const getTimeZones = (): string[] => {
 };
 
 export const Timezone = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const timeZones = useMemo(() => getTimeZones(), []);
   const [searchQuery, setSearchQuery] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
@@ -55,7 +57,7 @@ export const Timezone = () => {
   const handleSelect = async (timezone: string) => {
     // Don't update if it's the same timezone
     if (settings?.timezone === timezone) {
-      navigate('/settings');
+      router.push('/settings');
       return;
     }
 
@@ -66,7 +68,7 @@ export const Timezone = () => {
       // Update store directly from response, no need to fetch again
       setSettings(updatedSettings);
       toast.success('Timezone updated successfully');
-      navigate('/settings');
+      router.push('/settings');
     } catch (error) {
       if (error instanceof SettingsError) {
         toast.error(error.message);
@@ -86,7 +88,7 @@ export const Timezone = () => {
       >
         <div className="flex-shrink-0 mb-6 relative flex items-center justify-center">
           <button
-            onClick={() => navigate('/settings')}
+            onClick={() => router.push('/settings')}
             className="absolute left-0 flex items-center gap-1.5 text-gray-600 hover:text-gray-800 cursor-pointer px-2 py-1 rounded-xl hover:bg-white/50"
           >
             <ArrowLeftIcon strokeWidth={2.5} className="w-5 h-5" />

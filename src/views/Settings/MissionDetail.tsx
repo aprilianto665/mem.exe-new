@@ -1,5 +1,7 @@
+"use client";
+
 import { useMemo, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useRouter, useParams } from "next/navigation";
 import { PageTemplate } from "../../components/templates/PageTemplate";
 import { Text } from "../../components/atoms/Text";
 import { Button } from "../../components/atoms/Button";
@@ -39,8 +41,9 @@ const formatTotalTime = (totalMinutes?: number): string => {
 };
 
 export const MissionDetail = () => {
-  const navigate = useNavigate();
-  const { missionId } = useParams<RouteParams>();
+  const router = useRouter();
+  const params = useParams();
+  const missionId = (params?.missionId as string) || undefined;
   const { missions, deleteMission, fetchMissionDetail, isLoading } = useMissionStore();
 
   useEffect(() => {
@@ -55,18 +58,18 @@ export const MissionDetail = () => {
   );
 
   const handleBack = () => {
-    navigate("/settings/manage");
+    router.push("/settings/manage");
   };
 
   const handleEdit = () => {
-    navigate("/settings/manage/edit");
+    router.push("/settings/manage/edit");
   };
 
   const handleDelete = () => {
     if (missionId && window.confirm('Are you sure you want to delete this mission?')) {
       deleteMission(missionId);
       toast.success('Mission deleted successfully.');
-      navigate("/settings/manage");
+      router.push("/settings/manage");
     }
   };
 

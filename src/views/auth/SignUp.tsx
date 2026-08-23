@@ -1,4 +1,6 @@
-import { useNavigate } from 'react-router-dom';
+"use client";
+
+import { useRouter } from 'next/navigation';
 import { Logo } from '../../components/atoms/Logo';
 import { Input } from '../../components/atoms/Input';
 import { Button } from '../../components/atoms/Button';
@@ -6,7 +8,7 @@ import { Text } from '../../components/atoms/Text';
 import { useSignUp } from '../../hooks/useSignUp';
 
 export const SignUp = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { values, fieldErrors, isSubmitting, handleChange, handleSubmit } =
     useSignUp();
 
@@ -161,7 +163,7 @@ export const SignUp = () => {
               Already have an account?{' '}
               <button
                 type="button"
-                onClick={() => navigate('/login')}
+                onClick={() => router.push('/login')}
                 className="text-[#7DB8E0] hover:text-[#6BA8D0] font-semibold transition-colors cursor-pointer"
               >
                 Login

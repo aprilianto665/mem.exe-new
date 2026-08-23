@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { PageTemplate } from '../../components/templates/PageTemplate';
 import { CreateMissionForm } from '../../components/organisms/CreateMissionForm';

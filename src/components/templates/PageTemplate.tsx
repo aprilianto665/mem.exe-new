@@ -1,12 +1,14 @@
+"use client";
+
 import type { PageTemplateProps } from '../../types/pageTemplate.types';
 import { Logo } from '../atoms/Logo';
 import { BottomNavigation } from '../molecules/BottomNavigation';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter, usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 
 export const PageTemplate = ({ children }: PageTemplateProps) => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Map routes to tab names
   const routeToTabMap: Record<string, string> = useMemo(
@@ -23,20 +25,22 @@ export const PageTemplate = ({ children }: PageTemplateProps) => {
   // Get active tab from current route
   const activeTab = useMemo(() => {
     // First check for exact match
-    if (routeToTabMap[location.pathname]) {
-      return routeToTabMap[location.pathname];
+    if (pathname && routeToTabMap[pathname]) {
+      return routeToTabMap[pathname];
     }
     
     // Check for nested routes by matching pathname prefix
     // This handles routes like /settings/manage, /settings/profile, etc.
-    for (const [route, tab] of Object.entries(routeToTabMap)) {
-      if (location.pathname.startsWith(route + '/') || location.pathname === route) {
-        return tab;
+    if (pathname) {
+      for (const [route, tab] of Object.entries(routeToTabMap)) {
+        if (pathname.startsWith(route + '/') || pathname === route) {
+          return tab;
+        }
       }
     }
     
     return 'missions';
-  }, [location.pathname, routeToTabMap]);
+  }, [pathname, routeToTabMap]);
 
   // Map tab names to routes
   const tabToRouteMap: Record<string, string> = {
@@ -50,7 +54,7 @@ export const PageTemplate = ({ children }: PageTemplateProps) => {
   const handleTabChange = (tab: string) => {
     const route = tabToRouteMap[tab];
     if (route) {
-      navigate(route);
+      router.push(route);
     }
   };
 

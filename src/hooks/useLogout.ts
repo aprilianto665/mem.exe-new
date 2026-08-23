@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { signOut } from 'next-auth/react';
 import { useUserStore } from '../store/userStore';

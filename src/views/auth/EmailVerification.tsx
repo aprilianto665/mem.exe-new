@@ -1,4 +1,6 @@
-import { useNavigate } from 'react-router-dom';
+"use client";
+
+import { useRouter } from 'next/navigation';
 import { Logo } from '../../components/atoms/Logo';
 import { Input } from '../../components/atoms/Input';
 import { Button } from '../../components/atoms/Button';
@@ -20,7 +22,7 @@ const getMaskedEmail = (email: string | null) => {
 };
 
 export const EmailVerification = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const emailForVerification = useAuthStore(
     (state: AuthStoreState) => state.emailForVerification,
   );
@@ -109,7 +111,7 @@ export const EmailVerification = () => {
           <div className="mt-4 text-center">
             <button
               type="button"
-              onClick={() => navigate('/signup')}
+              onClick={() => router.push('/signup')}
               className="text-sm text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
             >
               Back to Sign Up

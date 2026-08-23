@@ -1,4 +1,6 @@
-import { useNavigate } from 'react-router-dom';
+"use client";
+
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { PageTemplate } from '../../components/templates/PageTemplate';
 import { Text } from '../../components/atoms/Text';
@@ -12,7 +14,7 @@ import toast from 'react-hot-toast';
 import { AuthError } from '../../services/authService';
 
 export const ChangePassword = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { user, isLoading } = useUserData();
 
   // Common Form States
@@ -114,7 +116,7 @@ export const ChangePassword = () => {
         });
         toast.success('Password set successfully.');
       }
-      navigate('/settings/profile');
+      router.push('/settings/profile');
     } catch (error) {
       if (error instanceof AuthError) {
         toast.error(error.message);
@@ -148,7 +150,7 @@ export const ChangePassword = () => {
               if (!hasPassword && step === 'set') {
                 setStep('verify');
               } else {
-                navigate('/settings/profile');
+                router.push('/settings/profile');
               }
             }}
             className="absolute left-0 flex items-center gap-1.5 text-gray-600 hover:text-gray-800 cursor-pointer px-2 py-1 rounded-xl hover:bg-white/50"
