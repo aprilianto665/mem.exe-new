@@ -95,13 +95,18 @@ export async function resolveHangingTimers(userId: string, timezoneArg?: string)
     const recordDateStr = getLocalDateString(record.mission_date, timezone);
     const endOfDay = getEndOfDayInTimezone(recordDateStr, timezone);
 
-    let additionalMinutes = 0;
+    let additionalSeconds = 0;
     if (endOfDay.getTime() > record.timer_started_at.getTime()) {
       const elapsedMs = endOfDay.getTime() - record.timer_started_at.getTime();
-      additionalMinutes = Math.floor(elapsedMs / (1000 * 60));
+      additionalSeconds = Math.floor(elapsedMs / 1000);
     }
 
-    const newMinutesDone = record.minutes_done + additionalMinutes;
+    const currentTotalSecs =
+      record.seconds_done && record.seconds_done > 0
+        ? record.seconds_done
+        : record.minutes_done * 60;
+    const newTotalSeconds = currentTotalSecs + additionalSeconds;
+    const newMinutesDone = Math.floor(newTotalSeconds / 60);
     const reqMins = record.required_minutes || record.missions.current_minutes_per_day;
     const isCompleted = newMinutesDone >= reqMins;
     const newStatus = isCompleted ? "completed" : "missed";
@@ -110,6 +115,7 @@ export async function resolveHangingTimers(userId: string, timezoneArg?: string)
       where: { id: record.id },
       data: {
         minutes_done: newMinutesDone,
+        seconds_done: newTotalSeconds,
         timer_started_at: null,
         status: newStatus,
         updated_at: new Date(),
@@ -684,6 +690,12 @@ export async function fetchMissionsAction(
       status
     );
 
+    const totalSecs = progressToday
+      ? progressToday.seconds_done && progressToday.seconds_done > 0
+        ? progressToday.seconds_done
+        : progressToday.minutes_done * 60
+      : 0;
+
     return {
       id: m.id,
       title: m.title,
@@ -694,7 +706,8 @@ export async function fetchMissionsAction(
       target_day: m.target_days ?? 0,
       minutes_per_day: m.current_minutes_per_day,
       timer_started_at: progressToday?.timer_started_at?.toISOString() || null,
-      logged_minutes: progressToday?.minutes_done ?? 0,
+      logged_minutes: Math.floor(totalSecs / 60),
+      logged_seconds: totalSecs,
       start_date: m.start_date ? m.start_date.toISOString() : null,
       days_of_week: m.days_of_week,
       duration: m.target_days ?? 0,
@@ -808,6 +821,11 @@ export async function fetchDailyMissionsAction(timezoneArg?: string) {
     );
 
     const progressToday = m.mission_daily_progress[0];
+    const totalSecs = progressToday
+      ? progressToday.seconds_done && progressToday.seconds_done > 0
+        ? progressToday.seconds_done
+        : progressToday.minutes_done * 60
+      : 0;
 
     missions.push({
       id: m.id,
@@ -819,7 +837,8 @@ export async function fetchDailyMissionsAction(timezoneArg?: string) {
       target_day: m.target_days ?? 0,
       minutes_per_day: m.current_minutes_per_day,
       timer_started_at: progressToday?.timer_started_at?.toISOString() || null,
-      logged_minutes: progressToday?.minutes_done ?? 0,
+      logged_minutes: Math.floor(totalSecs / 60),
+      logged_seconds: totalSecs,
       start_date: m.start_date ? m.start_date.toISOString() : null,
       days_of_week: m.days_of_week,
       duration: m.target_days ?? 0,
@@ -945,6 +964,12 @@ export async function fetchMissionDetailAction(missionId: string, timezoneArg?: 
 
   const progressToday = m.mission_daily_progress[0];
 
+  const totalSecs = progressToday
+    ? progressToday.seconds_done && progressToday.seconds_done > 0
+      ? progressToday.seconds_done
+      : progressToday.minutes_done * 60
+    : 0;
+
   return {
     id: m.id,
     title: m.title,
@@ -955,7 +980,8 @@ export async function fetchMissionDetailAction(missionId: string, timezoneArg?: 
     target_day: m.target_days ?? 0,
     minutes_per_day: m.current_minutes_per_day,
     timer_started_at: progressToday?.timer_started_at?.toISOString() || null,
-    logged_minutes: progressToday?.minutes_done ?? 0,
+    logged_minutes: Math.floor(totalSecs / 60),
+    logged_seconds: totalSecs,
     start_date: m.start_date ? m.start_date.toISOString() : null,
     days_of_week: m.days_of_week,
     duration: m.target_days ?? 0,
@@ -1060,6 +1086,7 @@ export async function startTimerAction(id: string, timezoneArg?: string) {
         mission_date: todayDate,
         required_minutes: m.current_minutes_per_day,
         minutes_done: 0,
+        seconds_done: 0,
         timer_started_at: new Date(),
         status: "pending",
       },
@@ -1088,19 +1115,6 @@ export async function logMinutesAction(
     throw new Error("Unauthorized or mission not found");
   }
 
-  const existing = await prisma.mission_daily_progress.findUnique({
-    where: {
-      mission_id_mission_date: {
-        mission_id: id,
-        mission_date: todayDate,
-      },
-    },
-  });
-
-  if (!existing?.timer_started_at) {
-    return { status: "success" };
-  }
-
   await prisma.$transaction(async (tx: any) => {
     const existing = await tx.mission_daily_progress.findUnique({
       where: {
@@ -1111,7 +1125,13 @@ export async function logMinutesAction(
       },
     });
 
-    const finalMinutes = (existing?.minutes_done ?? 0) + minutes;
+    const currentSecs =
+      existing?.seconds_done && existing.seconds_done > 0
+        ? existing.seconds_done
+        : (existing?.minutes_done ?? 0) * 60;
+
+    const newTotalSeconds = currentSecs + minutes * 60;
+    const finalMinutes = Math.floor(newTotalSeconds / 60);
     const reqMins = existing?.required_minutes ?? m.current_minutes_per_day;
     const status = finalMinutes >= reqMins ? "completed" : "pending";
 
@@ -1123,7 +1143,8 @@ export async function logMinutesAction(
         },
       },
       update: {
-        minutes_done: { increment: minutes },
+        minutes_done: finalMinutes,
+        seconds_done: newTotalSeconds,
         status: status,
         timer_started_at: null,
         updated_at: new Date(),
@@ -1132,7 +1153,8 @@ export async function logMinutesAction(
         mission_id: id,
         mission_date: todayDate,
         required_minutes: reqMins,
-        minutes_done: minutes,
+        minutes_done: finalMinutes,
+        seconds_done: newTotalSeconds,
         status: status,
         timer_started_at: null,
       },
@@ -1144,10 +1166,93 @@ export async function logMinutesAction(
 
 export async function pauseTimerAction(
   id: string,
-  additionalMinutes: number,
+  additionalSeconds?: number,
   timezoneArg?: string
 ) {
-  return await logMinutesAction(id, additionalMinutes, timezoneArg);
+  const userId = await getAuthUserId();
+  const settings = await getUserSettingsAction();
+  const timezone = timezoneArg || settings.timezone;
+
+  await resolveHangingTimers(userId, timezone);
+
+  const todayStr = getLocalDateString(new Date(), timezone);
+  const todayDate = new Date(todayStr + "T00:00:00Z");
+
+  const m = await prisma.missions.findUnique({ where: { id } });
+  if (!m || m.user_id !== userId) {
+    throw new Error("Unauthorized or mission not found");
+  }
+
+  const existing = await prisma.mission_daily_progress.findUnique({
+    where: {
+      mission_id_mission_date: {
+        mission_id: id,
+        mission_date: todayDate,
+      },
+    },
+  });
+
+  if (!existing?.timer_started_at && additionalSeconds === undefined) {
+    return { status: "success" };
+  }
+
+  let elapsedSecs = 0;
+  if (additionalSeconds !== undefined && additionalSeconds >= 0) {
+    elapsedSecs = additionalSeconds;
+  } else if (existing?.timer_started_at) {
+    elapsedSecs = Math.max(
+      0,
+      Math.floor((Date.now() - existing.timer_started_at.getTime()) / 1000)
+    );
+  }
+
+  await prisma.$transaction(async (tx: any) => {
+    const progress = await tx.mission_daily_progress.findUnique({
+      where: {
+        mission_id_mission_date: {
+          mission_id: id,
+          mission_date: todayDate,
+        },
+      },
+    });
+
+    const currentSecs =
+      progress?.seconds_done && progress.seconds_done > 0
+        ? progress.seconds_done
+        : (progress?.minutes_done ?? 0) * 60;
+
+    const newTotalSeconds = currentSecs + elapsedSecs;
+    const finalMinutes = Math.floor(newTotalSeconds / 60);
+    const reqMins = progress?.required_minutes ?? m.current_minutes_per_day;
+    const status = finalMinutes >= reqMins ? "completed" : "pending";
+
+    await tx.mission_daily_progress.upsert({
+      where: {
+        mission_id_mission_date: {
+          mission_id: id,
+          mission_date: todayDate,
+        },
+      },
+      update: {
+        seconds_done: newTotalSeconds,
+        minutes_done: finalMinutes,
+        status: status,
+        timer_started_at: null,
+        updated_at: new Date(),
+      },
+      create: {
+        mission_id: id,
+        mission_date: todayDate,
+        required_minutes: reqMins,
+        minutes_done: finalMinutes,
+        seconds_done: newTotalSeconds,
+        status: status,
+        timer_started_at: null,
+      },
+    });
+  });
+
+  return { status: "success" };
 }
 
 export async function fetchTimelineDataAction(timezoneArg?: string) {
@@ -1220,6 +1325,12 @@ export async function fetchTimelineDataAction(timezoneArg?: string) {
       status
     );
 
+    const totalSecs = progressToday
+      ? progressToday.seconds_done && progressToday.seconds_done > 0
+        ? progressToday.seconds_done
+        : progressToday.minutes_done * 60
+      : 0;
+
     return {
       id: m.id,
       title: m.title,
@@ -1230,7 +1341,8 @@ export async function fetchTimelineDataAction(timezoneArg?: string) {
       target_day: m.target_days ?? 0,
       minutes_per_day: m.current_minutes_per_day,
       timer_started_at: progressToday?.timer_started_at?.toISOString() || null,
-      logged_minutes: progressToday?.minutes_done ?? 0,
+      logged_minutes: Math.floor(totalSecs / 60),
+      logged_seconds: totalSecs,
       start_date: m.start_date ? m.start_date.toISOString() : null,
       days_of_week: m.days_of_week,
       duration: m.target_days ?? 0,
@@ -1452,6 +1564,12 @@ export async function fetchDailyTimelineAction(dateStr: string, timezoneArg?: st
 
     const record = historyMap.get(`${m.id}_${dateStr}`);
 
+    const totalSecs = record
+      ? record.seconds_done && record.seconds_done > 0
+        ? record.seconds_done
+        : record.minutes_done * 60
+      : 0;
+
     const mappedMission = {
       id: m.id,
       title: m.title,
@@ -1462,7 +1580,8 @@ export async function fetchDailyTimelineAction(dateStr: string, timezoneArg?: st
       target_day: m.target_days ?? 0,
       minutes_per_day: m.current_minutes_per_day,
       timer_started_at: record?.timer_started_at?.toISOString() || null,
-      logged_minutes: record?.minutes_done ?? 0,
+      logged_minutes: Math.floor(totalSecs / 60),
+      logged_seconds: totalSecs,
       start_date: m.start_date ? m.start_date.toISOString() : null,
       days_of_week: m.days_of_week,
       duration: m.target_days ?? 0,

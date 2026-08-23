@@ -65,7 +65,7 @@ export interface MissionStoreState {
   deleteMission: (id: string) => Promise<void>;
   logMinutes: (id: string, minutes: number) => Promise<void>;
   startTimer: (id: string) => Promise<void>;
-  pauseTimer: (id: string, additionalMinutes: number) => Promise<void>;
+  pauseTimer: (id: string, additionalSeconds?: number) => Promise<void>;
   addMilestone: (milestone: Omit<Milestone, 'id' | 'createdAt' | 'status'>) => Promise<void>;
   updateMilestone: (id: string, updates: Partial<Milestone>) => Promise<void>;
   deleteMilestone: (id: string) => Promise<void>;
@@ -90,12 +90,13 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
         return;
       }
 
-      let currentMinutes = item.logged_minutes || 0;
+      const baseSecs = item.logged_seconds !== undefined ? item.logged_seconds : (item.logged_minutes || 0) * 60;
+      let currentSecs = baseSecs;
       if (item.timer_started_at) {
         const elapsedSecs = Math.max(0, Math.floor((Date.now() - new Date(item.timer_started_at).getTime()) / 1000));
-        currentMinutes += Math.floor(elapsedSecs / 60);
+        currentSecs += elapsedSecs;
       }
-      currentMinutes = Math.min(item.minutes_per_day, currentMinutes);
+      const currentMinutes = Math.min(item.minutes_per_day, Math.floor(currentSecs / 60));
 
       const mapped: Mission = {
         id: item.id,
@@ -109,6 +110,7 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
         targetMinutes: item.minutes_per_day,
         currentMinutes: currentMinutes,
         loggedMinutes: item.logged_minutes,
+        loggedSeconds: baseSecs,
         status: item.status === 'cancelled' ? 'canceled' : (item.status as any),
         streak: item.streak || 0,
         missed: item.missed_consecutive || 0,
@@ -142,12 +144,13 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
       const backendHistory = res.history || [];
 
       const mappedMissions = backendMissions.map((item: any): Mission => {
-        let currentMinutes = item.logged_minutes || 0;
+        const baseSecs = item.logged_seconds !== undefined ? item.logged_seconds : (item.logged_minutes || 0) * 60;
+        let currentSecs = baseSecs;
         if (item.timer_started_at) {
           const elapsedSecs = Math.max(0, Math.floor((Date.now() - new Date(item.timer_started_at).getTime()) / 1000));
-          currentMinutes += Math.floor(elapsedSecs / 60);
+          currentSecs += elapsedSecs;
         }
-        currentMinutes = Math.min(item.minutes_per_day, currentMinutes);
+        const currentMinutes = Math.min(item.minutes_per_day, Math.floor(currentSecs / 60));
 
         return {
           id: item.id,
@@ -161,6 +164,7 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
           targetMinutes: item.minutes_per_day,
           currentMinutes: currentMinutes,
           loggedMinutes: item.logged_minutes,
+          loggedSeconds: baseSecs,
           status: item.status === 'cancelled' ? 'canceled' : (item.status as any),
           streak: item.streak || 0,
           missed: item.missed_consecutive || 0,
@@ -195,12 +199,13 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
       const backendHistory = res.history || [];
 
       const mappedMissions = backendMissions.map((item: any): Mission => {
-        let currentMinutes = item.logged_minutes || 0;
+        const baseSecs = item.logged_seconds !== undefined ? item.logged_seconds : (item.logged_minutes || 0) * 60;
+        let currentSecs = baseSecs;
         if (item.timer_started_at) {
           const elapsedSecs = Math.max(0, Math.floor((Date.now() - new Date(item.timer_started_at).getTime()) / 1000));
-          currentMinutes += Math.floor(elapsedSecs / 60);
+          currentSecs += elapsedSecs;
         }
-        currentMinutes = Math.min(item.minutes_per_day, currentMinutes);
+        const currentMinutes = Math.min(item.minutes_per_day, Math.floor(currentSecs / 60));
 
         return {
           id: item.id,
@@ -214,6 +219,7 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
           targetMinutes: item.minutes_per_day,
           currentMinutes: currentMinutes,
           loggedMinutes: item.logged_minutes,
+          loggedSeconds: baseSecs,
           status: item.status === 'cancelled' ? 'canceled' : (item.status as any),
           streak: item.streak || 0,
           missed: item.missed_consecutive || 0,
@@ -259,12 +265,13 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
       }));
 
       const mappedMissions = backendMissions.map((item: any): Mission => {
-        let currentMinutes = item.logged_minutes || 0;
+        const baseSecs = item.logged_seconds !== undefined ? item.logged_seconds : (item.logged_minutes || 0) * 60;
+        let currentSecs = baseSecs;
         if (item.timer_started_at) {
           const elapsedSecs = Math.max(0, Math.floor((Date.now() - new Date(item.timer_started_at).getTime()) / 1000));
-          currentMinutes += Math.floor(elapsedSecs / 60);
+          currentSecs += elapsedSecs;
         }
-        currentMinutes = Math.min(item.minutes_per_day, currentMinutes);
+        const currentMinutes = Math.min(item.minutes_per_day, Math.floor(currentSecs / 60));
 
         return {
           id: item.id,
@@ -278,6 +285,7 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
           targetMinutes: item.minutes_per_day,
           currentMinutes: currentMinutes,
           loggedMinutes: item.logged_minutes,
+          loggedSeconds: baseSecs,
           status: item.status === 'cancelled' ? 'canceled' : (item.status as any),
           streak: item.streak || 0,
           missed: item.missed_consecutive || 0,
@@ -322,12 +330,13 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
 
       const mappedMissions = (data.missions || []).map((detail: any) => {
         const item = detail.mission;
-        let currentMinutes = item.logged_minutes || 0;
+        const baseSecs = item.logged_seconds !== undefined ? item.logged_seconds : (item.logged_minutes || 0) * 60;
+        let currentSecs = baseSecs;
         if (item.timer_started_at) {
           const elapsedSecs = Math.max(0, Math.floor((Date.now() - new Date(item.timer_started_at).getTime()) / 1000));
-          currentMinutes += Math.floor(elapsedSecs / 60);
+          currentSecs += elapsedSecs;
         }
-        currentMinutes = Math.min(item.minutes_per_day, currentMinutes);
+        const currentMinutes = Math.min(item.minutes_per_day, Math.floor(currentSecs / 60));
 
         const missionObj = {
           id: item.id,
@@ -341,6 +350,7 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
           targetMinutes: item.minutes_per_day,
           currentMinutes: currentMinutes,
           loggedMinutes: item.logged_minutes,
+          loggedSeconds: baseSecs,
           status: item.status === 'cancelled' ? 'canceled' : item.status,
           streak: item.streak || 0,
           missed: item.missed_consecutive || 0,
@@ -458,11 +468,15 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
     set((state) => {
       const updated = state.missions.map((m) => {
         if (m.id === id) {
-          const newLogged = (m.loggedMinutes || 0) + minutes;
+          const currentSecs = m.loggedSeconds !== undefined ? m.loggedSeconds : (m.loggedMinutes || 0) * 60;
+          const newLoggedSecs = currentSecs + minutes * 60;
+          const newLoggedMins = Math.floor(newLoggedSecs / 60);
           return {
             ...m,
-            loggedMinutes: newLogged,
-            currentMinutes: Math.min(m.minutesPerDay, newLogged)
+            loggedMinutes: newLoggedMins,
+            loggedSeconds: newLoggedSecs,
+            currentMinutes: Math.min(m.minutesPerDay, newLoggedMins),
+            timerStartedAt: undefined
           };
         }
         return m;
@@ -498,15 +512,18 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
     }
   },
 
-  pauseTimer: async (id, additionalMinutes) => {
+  pauseTimer: async (id, additionalSeconds = 0) => {
     set((state) => {
       const updated = state.missions.map((m) => {
         if (m.id === id) {
-          const newLogged = (m.loggedMinutes || 0) + additionalMinutes;
+          const currentSecs = m.loggedSeconds !== undefined ? m.loggedSeconds : (m.loggedMinutes || 0) * 60;
+          const newLoggedSecs = currentSecs + additionalSeconds;
+          const newLoggedMins = Math.floor(newLoggedSecs / 60);
           return {
             ...m,
-            loggedMinutes: newLogged,
-            currentMinutes: Math.min(m.minutesPerDay, newLogged),
+            loggedMinutes: newLoggedMins,
+            loggedSeconds: newLoggedSecs,
+            currentMinutes: Math.min(m.minutesPerDay, newLoggedMins),
             timerStartedAt: undefined
           };
         }
@@ -516,7 +533,7 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
     });
 
     try {
-      await pauseTimerAction(id, additionalMinutes);
+      await pauseTimerAction(id, additionalSeconds);
       await get().fetchDailyMissions();
     } catch (err: any) {
       console.error(err);

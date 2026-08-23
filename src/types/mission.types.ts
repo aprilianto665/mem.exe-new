@@ -23,6 +23,7 @@ export interface Mission {
   linkedMilestoneId?: string;
   timerStartedAt?: string;
   loggedMinutes?: number;
+  loggedSeconds?: number;
   startDate?: string;
   totalMinutesDone?: number;
   averageMinutesDone?: number;

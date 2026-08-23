@@ -43,6 +43,7 @@ model mission_daily_progress {
   mission_id       String                             @db.Uuid
   mission_date     DateTime                           @db.Date
   minutes_done     Int                                @default(0)
+  seconds_done     Int                                @default(0)
   required_minutes Int
   status           mission_daily_progress_status_type @default(pending)
   created_at       DateTime                           @default(now()) @db.Timestamptz(6)

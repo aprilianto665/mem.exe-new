@@ -56,9 +56,12 @@ export const MissionCard = ({
     return () => clearInterval(interval);
   }, [mission.timerStartedAt, mission.id, pauseTimer, fetchDailyMissions]);
 
-  const baseMinutes = mission.loggedMinutes || 0;
-  const elapsedMinutes = Math.floor(elapsedSeconds / 60);
-  const currentMinutes = baseMinutes + elapsedMinutes;
+  const baseSeconds = mission.loggedSeconds !== undefined
+    ? mission.loggedSeconds
+    : (mission.loggedMinutes || 0) * 60;
+  const totalSeconds = isRunning ? baseSeconds + elapsedSeconds : baseSeconds;
+  const currentMinutes = Math.floor(totalSeconds / 60);
+  const currentSecs = totalSeconds % 60;
 
   const isChallenge = mission.commitmentType === 'challenge';
   
@@ -71,10 +74,10 @@ export const MissionCard = ({
     try {
       if (isRunning) {
         // Pausing
-        const minsToLog = Math.floor(elapsedSeconds / 60);
-        await pauseTimer(mission.id, minsToLog);
-        if (minsToLog > 0) {
-          toast.success(`Logged ${minsToLog} minutes of progress!`);
+        await pauseTimer(mission.id, elapsedSeconds);
+        if (elapsedSeconds >= 60) {
+          const minsToLog = Math.floor(elapsedSeconds / 60);
+          toast.success(`Logged ${minsToLog} minute${minsToLog > 1 ? 's' : ''} of progress!`);
         } else {
           toast.success('Timer paused.');
         }
@@ -133,14 +136,16 @@ export const MissionCard = ({
             {isRunning ? (
               <Text size="sm" weight="semibold" className="text-emerald-500 whitespace-nowrap flex items-center gap-1">
                 <span className="font-bold">
-                  {currentMinutes}m {String(elapsedSeconds % 60).padStart(2, '0')}s
+                  {currentMinutes}m {String(currentSecs).padStart(2, '0')}s
                 </span>
                 <span className="text-gray-400">/{mission.targetMinutes}m</span>
               </Text>
             ) : (
-              <Text size="sm" weight="semibold" className="text-gray-700 whitespace-nowrap">
-                <span className="font-bold">{currentMinutes}</span>
-                <span className="text-gray-400">/{mission.targetMinutes} min</span>
+              <Text size="sm" weight="semibold" className="text-gray-700 whitespace-nowrap flex items-center gap-1">
+                <span className="font-bold">
+                  {currentSecs > 0 ? `${currentMinutes}m ${String(currentSecs).padStart(2, '0')}s` : `${currentMinutes}m`}
+                </span>
+                <span className="text-gray-400">/{mission.targetMinutes}m</span>
               </Text>
             )}
           </div>

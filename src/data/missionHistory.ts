@@ -233,13 +233,18 @@ export const getMissionCompletionForDate = (
     const targetMinutes = mission.minutesPerDay || mission.targetMinutes || 60;
     
     // Live running minutes if timer is active
-    let completedMinutes = mission.loggedMinutes || 0;
+    const baseSecs =
+      mission.loggedSeconds !== undefined
+        ? mission.loggedSeconds
+        : (mission.loggedMinutes || 0) * 60;
+    let totalSecs = baseSecs;
     if (mission.timerStartedAt) {
       const elapsedMs = Date.now() - new Date(mission.timerStartedAt).getTime();
       if (elapsedMs > 0) {
-        completedMinutes += Math.floor(elapsedMs / 60000);
+        totalSecs += Math.floor(elapsedMs / 1000);
       }
     }
+    const completedMinutes = Math.floor(totalSecs / 60);
 
     const isCompleted = completedMinutes >= targetMinutes;
     return {
