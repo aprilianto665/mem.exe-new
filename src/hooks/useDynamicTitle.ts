@@ -18,13 +18,15 @@ export const useDynamicTitle = () => {
     }
 
     const startMs = new Date(activeMission.timerStartedAt).getTime();
+    const baseMinutes = activeMission.loggedMinutes || 0;
 
     const updateTitle = () => {
-      const diffSecs = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
+      const elapsedSecs = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
+      const totalSecs = baseMinutes * 60 + elapsedSecs;
 
-      const hours = Math.floor(diffSecs / 3600);
-      const minutes = Math.floor((diffSecs % 3600) / 60);
-      const seconds = diffSecs % 60;
+      const hours = Math.floor(totalSecs / 3600);
+      const minutes = Math.floor((totalSecs % 3600) / 60);
+      const seconds = totalSecs % 60;
 
       const pad = (num: number) => String(num).padStart(2, '0');
 
