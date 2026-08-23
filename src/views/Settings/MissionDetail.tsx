@@ -415,26 +415,28 @@ export const MissionDetail = () => {
           </FormSection>
 
           {/* Actions */}
-          <div className="flex gap-2 pt-2">
-            <Button
-              className="flex-1 bg-[#7DB8E0] hover:bg-[#6BA7CF]"
-              type="button"
-              aria-label="Edit mission"
-              onClick={handleEdit}
-            >
-              <PencilIcon strokeWidth={2} className="w-5 h-5" />
-              <span>Edit</span>
-            </Button>
-            <Button
-              className="flex-1 bg-[#FF6467] hover:bg-[#E5555A]"
-              type="button"
-              aria-label="Delete mission"
-              onClick={handleDelete}
-            >
-              <TrashIcon strokeWidth={2} className="w-5 h-5" />
-              <span>Delete</span>
-            </Button>
-          </div>
+          {mission.status !== 'completed' && mission.status !== 'canceled' && (
+            <div className="flex gap-2 pt-2">
+              <Button
+                className="flex-1 bg-[#7DB8E0] hover:bg-[#6BA7CF]"
+                type="button"
+                aria-label="Edit mission"
+                onClick={handleEdit}
+              >
+                <PencilIcon strokeWidth={2} className="w-5 h-5" />
+                <span>Edit</span>
+              </Button>
+              <Button
+                className="flex-1 bg-[#FF6467] hover:bg-[#E5555A]"
+                type="button"
+                aria-label="Delete mission"
+                onClick={handleDelete}
+              >
+                <TrashIcon strokeWidth={2} className="w-5 h-5" />
+                <span>Delete</span>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </PageTemplate>
