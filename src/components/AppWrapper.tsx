@@ -21,8 +21,11 @@ import { Login } from '../views/auth/Login';
 import { SignUp } from '../views/auth/SignUp';
 import { EmailVerification } from '../views/auth/EmailVerification';
 import { ProtectedRoute } from '../routes/ProtectedRoute';
+import { useDynamicTitle } from '../hooks/useDynamicTitle';
 
 export default function AppWrapper() {
+  useDynamicTitle();
+
   return (
     <BrowserRouter>
       <Routes>
