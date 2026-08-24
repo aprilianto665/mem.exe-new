@@ -301,7 +301,7 @@ export const MissionCard = ({
           {/* Large prominent timer countdown display */}
           <div className="my-2">
             <span 
-              className="font-mono text-5xl sm:text-6xl font-black tracking-tight tabular-nums text-gray-900"
+              className="font-mono text-5xl sm:text-6xl font-black tracking-tight tabular-nums text-[#364152]"
             >
               {formattedPomoTime}
             </span>
@@ -320,7 +320,7 @@ export const MissionCard = ({
                 >
                   <StopIcon className="w-6 h-6 text-white" />
                 </Button>
-                <Text size="xs" className="text-gray-400 text-center font-medium mt-1">
+                <Text size="xs" className="text-[#364152] text-center font-medium mt-1">
                   Stopping early will still save your progress
                 </Text>
               </>
@@ -346,7 +346,7 @@ export const MissionCard = ({
                     <ForwardIcon className="w-6 h-6 text-white" />
                   </Button>
                 </div>
-                <Text size="xs" className="text-gray-400 text-center font-medium mt-1">
+                <Text size="xs" className="text-[#364152] text-center font-medium mt-1">
                   Rest & Recharge. Next focus starts automatically.
                 </Text>
               </>
