@@ -251,12 +251,12 @@ export const MissionCard = ({
                 onClick={handleStartPomodoro} 
                 disabled={isAnotherPomodoroActive || isPomodoroLoading}
                 aria-label="Start Pomodoro Focus"
-                className={`!p-4 !w-14 !h-14 transition-all duration-300 ${
+                className={`!p-4 !w-14 !h-14 transition-colors duration-200 ${
                   isAnotherPomodoroActive
                     ? '!bg-gray-200 !text-gray-400 cursor-not-allowed border-none'
                     : isCompleted
                     ? '!bg-emerald-500 hover:!bg-emerald-600 border-none'
-                    : '!bg-amber-500 hover:!bg-amber-600 border-amber-500 shadow-md shadow-amber-500/20 hover:scale-105'
+                    : '!bg-amber-500 hover:!bg-amber-600 border-amber-500'
                 }`}
               >
                 <PlayIcon className="w-6 h-6 text-white" />
@@ -265,7 +265,7 @@ export const MissionCard = ({
               <Button 
                 variant="primary" 
                 onClick={handleToggleDefaultTimer} 
-                className={`!p-4 !w-14 !h-14 transition-all duration-300 ${
+                className={`!p-4 !w-14 !h-14 transition-colors duration-200 ${
                   isRunningDefault 
                     ? 'bg-amber-500 hover:bg-amber-600 border-amber-500' 
                     : ''
@@ -289,11 +289,11 @@ export const MissionCard = ({
           <div className="mb-1 text-center">
             {pomodoroSession.phase === 'focus' ? (
               <Text size="xs" weight="bold" className="uppercase tracking-widest text-amber-500">
-                Focus Mode ({pomodoroSession.focusMinutes}m)
+                Focus Mode
               </Text>
             ) : (
               <Text size="xs" weight="bold" className="uppercase tracking-widest text-emerald-500">
-                Rest & Recharge ({pomodoroSession.restMinutes}m)
+                Rest & Recharge
               </Text>
             )}
           </div>
@@ -320,7 +320,7 @@ export const MissionCard = ({
                   onClick={handleStopPomodoro}
                   disabled={isPomodoroLoading}
                   aria-label="Stop Pomodoro"
-                  className="!p-4 !w-14 !h-14 !rounded-2xl !bg-rose-500 hover:!bg-rose-600 border-none shadow-lg shadow-rose-500/20 hover:scale-105 active:scale-95 transition-all"
+                  className="!p-4 !w-14 !h-14 !rounded-2xl !bg-rose-500 hover:!bg-rose-600 border-none transition-colors duration-200"
                 >
                   <StopIcon className="w-6 h-6 text-white" />
                 </Button>
@@ -335,7 +335,7 @@ export const MissionCard = ({
                   onClick={handleSkipRest}
                   disabled={isPomodoroLoading}
                   aria-label="Skip Rest"
-                  className="!p-4 !w-14 !h-14 !rounded-2xl !bg-emerald-500 hover:!bg-emerald-600 border-none shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all"
+                  className="!p-4 !w-14 !h-14 !rounded-2xl !bg-emerald-500 hover:!bg-emerald-600 border-none transition-colors duration-200"
                 >
                   <ForwardIcon className="w-6 h-6 text-white" />
                 </Button>
