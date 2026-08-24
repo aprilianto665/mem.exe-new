@@ -254,9 +254,7 @@ export const MissionCard = ({
                 className={`!p-4 !w-14 !h-14 transition-colors duration-200 ${
                   isAnotherPomodoroActive
                     ? '!bg-gray-200 !text-gray-400 cursor-not-allowed border-none'
-                    : isCompleted
-                    ? '!bg-emerald-500 hover:!bg-emerald-600 border-none'
-                    : '!bg-amber-500 hover:!bg-amber-600 border-amber-500'
+                    : ''
                 }`}
               >
                 <PlayIcon className="w-6 h-6 text-white" />
