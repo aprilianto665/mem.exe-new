@@ -346,7 +346,7 @@ export const MissionCard = ({
                     <ForwardIcon className="w-6 h-6 text-white" />
                   </Button>
                 </div>
-                <Text size="xs" className="text-emerald-600 text-center font-medium mt-1">
+                <Text size="xs" className="text-gray-400 text-center font-medium mt-1">
                   Rest & Recharge. Next focus starts automatically.
                 </Text>
               </>
