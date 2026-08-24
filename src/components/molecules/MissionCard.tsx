@@ -35,14 +35,14 @@ export const MissionCard = ({
 
   // Default mode state
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const isRunningDefault = !isPomodoroMode && !!mission.timerStartedAt;
+  const isRunningDefault = !!mission.timerStartedAt;
 
   // Pomodoro countdown remaining state (in seconds)
   const [pomodoroRemainingSecs, setPomodoroRemainingSecs] = useState<number>(0);
 
   // 1. Logic for Default Mode Timer
   useEffect(() => {
-    if (isPomodoroMode || !mission.timerStartedAt) {
+    if (!mission.timerStartedAt) {
       setElapsedSeconds(0);
       return;
     }
@@ -75,7 +75,7 @@ export const MissionCard = ({
     calculateElapsed();
     const interval = setInterval(calculateElapsed, 1000);
     return () => clearInterval(interval);
-  }, [isPomodoroMode, mission.timerStartedAt, mission.id, pauseTimer, fetchDailyMissions]);
+  }, [mission.timerStartedAt, mission.id, pauseTimer, fetchDailyMissions]);
 
   // 2. Logic for Pomodoro Countdown Timer
   useEffect(() => {
@@ -245,7 +245,7 @@ export const MissionCard = ({
         {/* Right: Action Button (when not in expanded Pomodoro mode) */}
         {!isThisPomodoroActive && (
           <div className="flex items-center gap-2 flex-shrink-0 self-center">
-            {isPomodoroMode ? (
+            {isPomodoroMode && !isRunningDefault ? (
               <Button 
                 variant="primary" 
                 onClick={handleStartPomodoro} 

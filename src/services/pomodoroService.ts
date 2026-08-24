@@ -29,8 +29,13 @@ export const startPomodoro = async (
   missionId: string
 ): Promise<PomodoroSessionData> => {
   try {
-    return await startPomodoroAction(missionId);
+    const response = await startPomodoroAction(missionId);
+    if ('error' in response && response.error) {
+      throw new PomodoroServiceError(response.error);
+    }
+    return response as PomodoroSessionData;
   } catch (error: any) {
+    if (error instanceof PomodoroServiceError) throw error;
     throw new PomodoroServiceError(error.message || 'Failed to start pomodoro timer');
   }
 };

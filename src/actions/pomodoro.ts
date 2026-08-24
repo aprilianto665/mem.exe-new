@@ -183,7 +183,7 @@ export async function getPomodoroStatusAction(): Promise<PomodoroSessionData | n
   };
 }
 
-export async function startPomodoroAction(missionId: string): Promise<PomodoroSessionData> {
+export async function startPomodoroAction(missionId: string): Promise<PomodoroSessionData | { error: string }> {
   const userId = await getAuthUserId();
   const settings = await getUserSettingsAction();
   const timezone = settings.timezone;
@@ -195,7 +195,7 @@ export async function startPomodoroAction(missionId: string): Promise<PomodoroSe
   });
 
   if (!mission || mission.user_id !== userId) {
-    throw new Error("Mission not found or unauthorized");
+    return { error: "Mission not found or unauthorized" };
   }
 
   const activeDefaultTimer = await prisma.mission_daily_progress.findFirst({
@@ -205,7 +205,7 @@ export async function startPomodoroAction(missionId: string): Promise<PomodoroSe
     },
   });
   if (activeDefaultTimer) {
-    throw new Error("Please complete or stop your active timer first");
+    return { error: "Please complete or stop your active timer first" };
   }
 
   const focusMinutes = settings.pomodoro?.focus_minutes ?? 25;
