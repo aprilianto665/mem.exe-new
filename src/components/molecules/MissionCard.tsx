@@ -18,7 +18,7 @@ export const MissionCard = ({
   mission 
 }: MissionCardProps) => {
   const { startTimer, pauseTimer, fetchDailyMissions } = useMissionStore();
-  const { settings } = useSettingsStore();
+  const { settings, hasFetched: settingsHasFetched, isLoading: isSettingsLoading } = useSettingsStore();
   const { 
     session: pomodoroSession, 
     serverTimeOffset, 
@@ -142,6 +142,13 @@ export const MissionCard = ({
 
   // Handlers for default timer
   const handleToggleDefaultTimer = async () => {
+    // If settings indicate pomodoro mode and timer is not running, redirect to start Pomodoro
+    const currentSettings = useSettingsStore.getState().settings;
+    if (currentSettings?.execution_mode === 'pomodoro' && !isRunningDefault) {
+      await handleStartPomodoro();
+      return;
+    }
+
     try {
       if (isRunningDefault) {
         await pauseTimer(mission.id, elapsedSeconds);
@@ -271,10 +278,10 @@ export const MissionCard = ({
               <Button 
                 variant="primary" 
                 onClick={handleStartPomodoro} 
-                disabled={isAnotherPomodoroActive || isPomodoroLoading}
+                disabled={isAnotherPomodoroActive || isPomodoroLoading || (!settings && isSettingsLoading)}
                 aria-label="Start Pomodoro Focus"
                 className={`!p-4 !w-14 !h-14 transition-colors duration-200 ${
-                  isAnotherPomodoroActive
+                  isAnotherPomodoroActive || (!settings && isSettingsLoading)
                     ? '!bg-gray-200 !text-gray-400 cursor-not-allowed border-none'
                     : ''
                 }`}
@@ -285,9 +292,12 @@ export const MissionCard = ({
               <Button 
                 variant="primary" 
                 onClick={handleToggleDefaultTimer} 
+                disabled={!isRunningDefault && !settings && isSettingsLoading}
                 className={`!p-4 !w-14 !h-14 transition-colors duration-200 ${
                   isRunningDefault 
                     ? 'bg-amber-500 hover:bg-amber-600 border-amber-500' 
+                    : !isRunningDefault && !settings && isSettingsLoading
+                    ? '!bg-gray-200 !text-gray-400 cursor-not-allowed border-none'
                     : ''
                 }`}
               >
