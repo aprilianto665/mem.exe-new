@@ -330,17 +330,28 @@ export const MissionCard = ({
               </>
             ) : (
               <>
-                <Button
-                  variant="primary"
-                  onClick={handleSkipRest}
-                  disabled={isPomodoroLoading}
-                  aria-label="Skip Rest"
-                  className="!p-4 !w-14 !h-14 !rounded-2xl !bg-emerald-500 hover:!bg-emerald-600 border-none transition-colors duration-200"
-                >
-                  <ForwardIcon className="w-6 h-6 text-white" />
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="primary"
+                    onClick={handleStopPomodoro}
+                    disabled={isPomodoroLoading}
+                    aria-label="Stop Pomodoro"
+                    className="!p-4 !w-14 !h-14 !rounded-2xl !bg-rose-500 hover:!bg-rose-600 border-none transition-colors duration-200"
+                  >
+                    <StopIcon className="w-6 h-6 text-white" />
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={handleSkipRest}
+                    disabled={isPomodoroLoading}
+                    aria-label="Skip Rest"
+                    className="!p-4 !w-14 !h-14 !rounded-2xl !bg-emerald-500 hover:!bg-emerald-600 border-none transition-colors duration-200"
+                  >
+                    <ForwardIcon className="w-6 h-6 text-white" />
+                  </Button>
+                </div>
                 <Text size="xs" className="text-emerald-600 text-center font-medium mt-1">
-                  Rest & Recharge. Take a short break!
+                  Rest & Recharge. Next focus starts automatically.
                 </Text>
               </>
             )}

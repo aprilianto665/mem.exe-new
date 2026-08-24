@@ -109,10 +109,15 @@ export const usePomodoroStore = create<PomodoroStoreState>((set, get) => ({
   },
 
   skipRest: async () => {
-    set({ session: null, isLoading: true });
+    set({ isLoading: true });
     try {
-      await executeTimerAction({ action: 'skip_rest' });
-      set({ session: null, isLoading: false });
+      const updatedSession = await executeTimerAction({ action: 'skip_rest' });
+      if (updatedSession) {
+        const offset = new Date(updatedSession.serverNow).getTime() - Date.now();
+        set({ session: updatedSession, serverTimeOffset: offset, isLoading: false });
+      } else {
+        set({ session: null, isLoading: false });
+      }
       useMissionStore.getState().fetchDailyMissions();
     } catch (err: any) {
       set({ error: err.message || 'Failed to skip rest', isLoading: false });
