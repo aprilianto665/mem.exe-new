@@ -301,11 +301,7 @@ export const MissionCard = ({
           {/* Large prominent timer countdown display */}
           <div className="my-2">
             <span 
-              className={`font-mono text-5xl sm:text-6xl font-black tracking-tight tabular-nums transition-colors duration-500 ${
-                pomodoroSession.phase === 'focus' 
-                  ? 'text-amber-500 drop-shadow-sm' 
-                  : 'text-emerald-500 drop-shadow-sm'
-              }`}
+              className="font-mono text-5xl sm:text-6xl font-black tracking-tight tabular-nums text-gray-900"
             >
               {formattedPomoTime}
             </span>
