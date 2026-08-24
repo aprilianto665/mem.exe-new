@@ -49,6 +49,7 @@ export const usePomodoroStore = create<PomodoroStoreState>((set, get) => ({
   },
 
   start: async (missionId: string) => {
+    if (get().isLoading) return;
     set({ isLoading: true, error: null });
     try {
       const newSession = await startPomodoro(missionId);
@@ -65,6 +66,7 @@ export const usePomodoroStore = create<PomodoroStoreState>((set, get) => ({
   },
 
   stopEarly: async () => {
+    if (get().isLoading) return;
     const prevSession = get().session;
     // Optimistic clear
     set({ session: null, isLoading: true });
@@ -80,6 +82,7 @@ export const usePomodoroStore = create<PomodoroStoreState>((set, get) => ({
   },
 
   finishPhase: async () => {
+    if (get().isLoading) return;
     const currentSession = get().session;
     if (!currentSession) return;
 
@@ -107,6 +110,7 @@ export const usePomodoroStore = create<PomodoroStoreState>((set, get) => ({
   },
 
   skipRest: async () => {
+    if (get().isLoading) return;
     set({ isLoading: true });
     try {
       const updatedSession = await executeTimerAction({ action: 'skip_rest' });

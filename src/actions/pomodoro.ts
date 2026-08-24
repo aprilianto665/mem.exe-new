@@ -267,29 +267,48 @@ export async function timerActionAction(payload: {
 
   if (payload.action === "finish_phase") {
     if (session.phase === "focus") {
-      // 1. Log full focus time
-      await logSecondsToMission(userId, session.mission_id, focusMinutes * 60, timezone);
-
-      // 2. Transition to rest phase
       const restEnd = new Date(now.getTime() + restMinutes * 60 * 1000);
-      const updated = await prisma.active_pomodoro_sessions.update({
-        where: { user_id: userId },
+      // Atomic compare-and-swap: only transition if phase is still 'focus'
+      const updateResult = await prisma.active_pomodoro_sessions.updateMany({
+        where: { user_id: userId, phase: "focus" },
         data: {
           phase: "rest",
           start_time: now,
           expected_end_time: restEnd,
           updated_at: now,
         },
-        include: { missions: true },
       });
 
+      if (updateResult.count === 0) {
+        // Another concurrent request already handled this phase transition
+        const currentSession = await prisma.active_pomodoro_sessions.findUnique({
+          where: { user_id: userId },
+          include: { missions: true },
+        });
+        if (!currentSession) return null;
+        return {
+          id: currentSession.id,
+          missionId: currentSession.mission_id,
+          missionTitle: currentSession.missions.title,
+          phase: currentSession.phase as "focus" | "rest",
+          startTime: currentSession.start_time.toISOString(),
+          expectedEndTime: currentSession.expected_end_time.toISOString(),
+          focusMinutes,
+          restMinutes,
+          serverNow: new Date().toISOString(),
+        };
+      }
+
+      // 1. Log full focus time only when successfully transitioned
+      await logSecondsToMission(userId, session.mission_id, focusMinutes * 60, timezone);
+
       return {
-        id: updated.id,
-        missionId: updated.mission_id,
-        missionTitle: updated.missions.title,
+        id: session.id,
+        missionId: session.mission_id,
+        missionTitle: session.missions.title,
         phase: "rest",
-        startTime: updated.start_time.toISOString(),
-        expectedEndTime: updated.expected_end_time.toISOString(),
+        startTime: now.toISOString(),
+        expectedEndTime: restEnd.toISOString(),
         focusMinutes,
         restMinutes,
         serverNow: new Date().toISOString(),
@@ -297,24 +316,42 @@ export async function timerActionAction(payload: {
     } else {
       // Rest finished -> Automatically loop to next focus phase!
       const focusEnd = new Date(now.getTime() + focusMinutes * 60 * 1000);
-      const updated = await prisma.active_pomodoro_sessions.update({
-        where: { user_id: userId },
+      const updateResult = await prisma.active_pomodoro_sessions.updateMany({
+        where: { user_id: userId, phase: "rest" },
         data: {
           phase: "focus",
           start_time: now,
           expected_end_time: focusEnd,
           updated_at: now,
         },
-        include: { missions: true },
       });
 
+      if (updateResult.count === 0) {
+        const currentSession = await prisma.active_pomodoro_sessions.findUnique({
+          where: { user_id: userId },
+          include: { missions: true },
+        });
+        if (!currentSession) return null;
+        return {
+          id: currentSession.id,
+          missionId: currentSession.mission_id,
+          missionTitle: currentSession.missions.title,
+          phase: currentSession.phase as "focus" | "rest",
+          startTime: currentSession.start_time.toISOString(),
+          expectedEndTime: currentSession.expected_end_time.toISOString(),
+          focusMinutes,
+          restMinutes,
+          serverNow: new Date().toISOString(),
+        };
+      }
+
       return {
-        id: updated.id,
-        missionId: updated.mission_id,
-        missionTitle: updated.missions.title,
+        id: session.id,
+        missionId: session.mission_id,
+        missionTitle: session.missions.title,
         phase: "focus",
-        startTime: updated.start_time.toISOString(),
-        expectedEndTime: updated.expected_end_time.toISOString(),
+        startTime: now.toISOString(),
+        expectedEndTime: focusEnd.toISOString(),
         focusMinutes,
         restMinutes,
         serverNow: new Date().toISOString(),
@@ -323,30 +360,53 @@ export async function timerActionAction(payload: {
   } else if (payload.action === "skip_rest") {
     // Skip rest -> Immediately transition to next focus phase!
     const focusEnd = new Date(now.getTime() + focusMinutes * 60 * 1000);
-    const updated = await prisma.active_pomodoro_sessions.update({
-      where: { user_id: userId },
+    const updateResult = await prisma.active_pomodoro_sessions.updateMany({
+      where: { user_id: userId, phase: "rest" },
       data: {
         phase: "focus",
         start_time: now,
         expected_end_time: focusEnd,
         updated_at: now,
       },
-      include: { missions: true },
     });
 
+    if (updateResult.count === 0) {
+      const currentSession = await prisma.active_pomodoro_sessions.findUnique({
+        where: { user_id: userId },
+        include: { missions: true },
+      });
+      if (!currentSession) return null;
+      return {
+        id: currentSession.id,
+        missionId: currentSession.mission_id,
+        missionTitle: currentSession.missions.title,
+        phase: currentSession.phase as "focus" | "rest",
+        startTime: currentSession.start_time.toISOString(),
+        expectedEndTime: currentSession.expected_end_time.toISOString(),
+        focusMinutes,
+        restMinutes,
+        serverNow: new Date().toISOString(),
+      };
+    }
+
     return {
-      id: updated.id,
-      missionId: updated.mission_id,
-      missionTitle: updated.missions.title,
+      id: session.id,
+      missionId: session.mission_id,
+      missionTitle: session.missions.title,
       phase: "focus",
-      startTime: updated.start_time.toISOString(),
-      expectedEndTime: updated.expected_end_time.toISOString(),
+      startTime: now.toISOString(),
+      expectedEndTime: focusEnd.toISOString(),
       focusMinutes,
       restMinutes,
       serverNow: new Date().toISOString(),
     };
   } else if (payload.action === "stop_early") {
-    if (session.phase === "focus") {
+    // Atomic deletion first to prevent race condition
+    const deleted = await prisma.active_pomodoro_sessions.deleteMany({
+      where: { user_id: userId },
+    });
+
+    if (deleted.count > 0 && session.phase === "focus") {
       // Calculate elapsed seconds since start_time
       const elapsedSecs = Math.min(
         focusMinutes * 60,
@@ -356,10 +416,6 @@ export async function timerActionAction(payload: {
         await logSecondsToMission(userId, session.mission_id, elapsedSecs, timezone);
       }
     }
-    // Delete session
-    await prisma.active_pomodoro_sessions.delete({
-      where: { user_id: userId },
-    });
     return null;
   }
 

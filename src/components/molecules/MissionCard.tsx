@@ -113,6 +113,7 @@ export const MissionCard = ({
       setPomodoroRemainingSecs(diffSecs);
 
       if (diffSecs <= 0) {
+        if (isPomodoroLoading) return;
         // Automatically finish phase when time hits zero
         try {
           await finishPomodoroPhase();
@@ -125,7 +126,7 @@ export const MissionCard = ({
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
-  }, [isThisPomodoroActive, pomodoroSession, serverTimeOffset, finishPomodoroPhase, fetchPomodoroStatus, fetchDailyMissions]);
+  }, [isThisPomodoroActive, pomodoroSession, serverTimeOffset, finishPomodoroPhase, fetchPomodoroStatus, fetchDailyMissions, isPomodoroLoading]);
 
   const baseSeconds = mission.loggedSeconds !== undefined
     ? mission.loggedSeconds
