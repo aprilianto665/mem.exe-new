@@ -23,8 +23,6 @@ export interface PomodoroStoreState {
   setSession: (session: PomodoroSessionData | null) => void;
 }
 
-let pollIntervalId: any = null;
-
 export const usePomodoroStore = create<PomodoroStoreState>((set, get) => ({
   session: null,
   isLoading: false,
@@ -126,13 +124,3 @@ export const usePomodoroStore = create<PomodoroStoreState>((set, get) => ({
     }
   },
 }));
-
-// Setup automatic cross-device polling if running in browser
-if (typeof window !== 'undefined') {
-  if (!pollIntervalId) {
-    pollIntervalId = setInterval(() => {
-      // Poll every 5s to keep sync across devices
-      usePomodoroStore.getState().fetchStatus();
-    }, 5000);
-  }
-}
