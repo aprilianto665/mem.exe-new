@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { PlayIcon, PauseIcon, StopIcon, ForwardIcon } from '@heroicons/react/24/solid';
-import { SparklesIcon, FireIcon } from '@heroicons/react/24/outline';
 import type { MissionCardProps } from '../../types/missionCard.types';
 import { Text } from '../atoms/Text';
 import { ProgressBar } from '../atoms/ProgressBar';
@@ -286,18 +285,16 @@ export const MissionCard = ({
       {/* Expanded Pomodoro Section */}
       {isThisPomodoroActive && pomodoroSession && (
         <div className="mt-6 pt-5 border-t border-gray-100 flex flex-col items-center justify-center animate-fadeIn">
-          {/* Phase Badge */}
-          <div className="mb-3">
+          {/* Phase Header */}
+          <div className="mb-1 text-center">
             {pomodoroSession.phase === 'focus' ? (
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200/80 text-amber-700 text-xs font-bold tracking-wide uppercase shadow-sm">
-                <FireIcon className="w-4 h-4 text-amber-500 animate-pulse" />
-                <span>Focus Mode ({pomodoroSession.focusMinutes}m)</span>
-              </div>
+              <Text size="xs" weight="bold" className="uppercase tracking-widest text-amber-500">
+                Focus Mode ({pomodoroSession.focusMinutes}m)
+              </Text>
             ) : (
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs font-bold tracking-wide uppercase shadow-sm">
-                <SparklesIcon className="w-4 h-4 text-emerald-500 animate-bounce" />
-                <span>Rest & Recharge ({pomodoroSession.restMinutes}m)</span>
-              </div>
+              <Text size="xs" weight="bold" className="uppercase tracking-widest text-emerald-500">
+                Rest & Recharge ({pomodoroSession.restMinutes}m)
+              </Text>
             )}
           </div>
 
