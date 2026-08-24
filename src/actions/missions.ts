@@ -122,6 +122,78 @@ export async function resolveHangingTimers(userId: string, timezoneArg?: string)
       },
     });
   }
+
+  // 2. Resolve hanging Pomodoro timers
+  const hangingPomodoros = await prisma.active_pomodoro_sessions.findMany({
+    where: {
+      user_id: userId,
+      start_time: { lt: todayDate },
+    },
+    include: { missions: true }
+  });
+
+  for (const pomo of hangingPomodoros) {
+    if (pomo.phase === "focus") {
+      const recordDateStr = getLocalDateString(pomo.start_time, timezone);
+      const endOfDay = getEndOfDayInTimezone(recordDateStr, timezone);
+      
+      const elapsedMs = endOfDay.getTime() - pomo.start_time.getTime();
+      const elapsedSecs = Math.max(0, Math.floor(elapsedMs / 1000));
+      
+      const maxFocusSecs = Math.max(0, Math.floor((pomo.expected_end_time.getTime() - pomo.start_time.getTime()) / 1000));
+      const actualSecsToLog = Math.min(maxFocusSecs, elapsedSecs);
+
+      if (actualSecsToLog > 0) {
+        const pomoDate = new Date(recordDateStr + "T00:00:00Z");
+        
+        const existingProgress = await prisma.mission_daily_progress.findUnique({
+          where: {
+            mission_id_mission_date: {
+              mission_id: pomo.mission_id,
+              mission_date: pomoDate,
+            }
+          }
+        });
+        
+        const currentTotalSecs = existingProgress?.seconds_done && existingProgress.seconds_done > 0
+          ? existingProgress.seconds_done
+          : (existingProgress?.minutes_done || 0) * 60;
+        
+        const newTotalSeconds = currentTotalSecs + actualSecsToLog;
+        const newMinutesDone = Math.floor(newTotalSeconds / 60);
+        const reqMins = existingProgress?.required_minutes || pomo.missions.current_minutes_per_day;
+        const isCompleted = newMinutesDone >= reqMins;
+        const newStatus = isCompleted ? "completed" : "missed";
+
+        await prisma.mission_daily_progress.upsert({
+          where: {
+            mission_id_mission_date: {
+              mission_id: pomo.mission_id,
+              mission_date: pomoDate,
+            }
+          },
+          update: {
+            minutes_done: newMinutesDone,
+            seconds_done: newTotalSeconds,
+            status: newStatus,
+            updated_at: new Date(),
+          },
+          create: {
+            mission_id: pomo.mission_id,
+            mission_date: pomoDate,
+            required_minutes: reqMins,
+            minutes_done: newMinutesDone,
+            seconds_done: newTotalSeconds,
+            status: newStatus,
+          }
+        });
+      }
+    }
+    
+    await prisma.active_pomodoro_sessions.delete({
+      where: { id: pomo.id }
+    });
+  }
 }
 
 

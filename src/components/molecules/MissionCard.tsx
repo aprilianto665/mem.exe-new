@@ -26,7 +26,8 @@ export const MissionCard = ({
     stopEarly: stopPomodoro, 
     finishPhase: finishPomodoroPhase, 
     skipRest: skipPomodoroRest,
-    isLoading: isPomodoroLoading
+    isLoading: isPomodoroLoading,
+    fetchStatus: fetchPomodoroStatus
   } = usePomodoroStore();
 
   const isPomodoroMode = settings?.execution_mode === 'pomodoro';
@@ -84,6 +85,26 @@ export const MissionCard = ({
     }
 
     const updateCountdown = async () => {
+      const startMs = new Date(pomodoroSession.startTime).getTime();
+      const startDate = new Date(startMs);
+      const now = new Date();
+
+      const isDifferentDay =
+        startDate.getDate() !== now.getDate() ||
+        startDate.getMonth() !== now.getMonth() ||
+        startDate.getFullYear() !== now.getFullYear();
+
+      if (isDifferentDay) {
+        toast.error('Timer stopped automatically due to day rollover');
+        try {
+          await fetchPomodoroStatus();
+          await fetchDailyMissions();
+        } catch {
+          // ignore
+        }
+        return;
+      }
+
       const targetEndMs = new Date(pomodoroSession.expectedEndTime).getTime();
       const nowWithOffsetMs = Date.now() + (serverTimeOffset || 0);
       const diffMs = targetEndMs - nowWithOffsetMs;
@@ -104,7 +125,7 @@ export const MissionCard = ({
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
-  }, [isThisPomodoroActive, pomodoroSession, serverTimeOffset, finishPomodoroPhase]);
+  }, [isThisPomodoroActive, pomodoroSession, serverTimeOffset, finishPomodoroPhase, fetchPomodoroStatus, fetchDailyMissions]);
 
   const baseSeconds = mission.loggedSeconds !== undefined
     ? mission.loggedSeconds
