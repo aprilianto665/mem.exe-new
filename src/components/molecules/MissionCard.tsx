@@ -315,10 +315,10 @@ export const MissionCard = ({
                   variant="primary"
                   onClick={handleStopPomodoro}
                   disabled={isPomodoroLoading}
-                  aria-label="Stop Pomodoro"
-                  className="!p-4 !w-14 !h-14 !rounded-2xl !bg-rose-500 hover:!bg-rose-600 border-none transition-colors duration-200"
+                  className="!px-6 !py-3.5 !rounded-2xl !bg-rose-500 hover:!bg-rose-600 border-none transition-colors duration-200 flex items-center gap-2 font-semibold text-sm shadow-sm text-white"
                 >
-                  <StopIcon className="w-6 h-6 text-white" />
+                  <StopIcon className="w-5 h-5 text-white" />
+                  <span>Stop Focus</span>
                 </Button>
                 <Text size="xs" className="text-[#364152] text-center font-medium mt-1">
                   Stopping early will still save your progress
@@ -331,19 +331,19 @@ export const MissionCard = ({
                     variant="primary"
                     onClick={handleStopPomodoro}
                     disabled={isPomodoroLoading}
-                    aria-label="Stop Pomodoro"
-                    className="!p-4 !w-14 !h-14 !rounded-2xl !bg-rose-500 hover:!bg-rose-600 border-none transition-colors duration-200"
+                    className="!px-5 !py-3.5 !rounded-2xl !bg-rose-500 hover:!bg-rose-600 border-none transition-colors duration-200 flex items-center gap-2 font-semibold text-sm shadow-sm text-white"
                   >
-                    <StopIcon className="w-6 h-6 text-white" />
+                    <StopIcon className="w-5 h-5 text-white" />
+                    <span>Stop</span>
                   </Button>
                   <Button
                     variant="primary"
                     onClick={handleSkipRest}
                     disabled={isPomodoroLoading}
-                    aria-label="Skip Rest"
-                    className="!p-4 !w-14 !h-14 !rounded-2xl !bg-emerald-500 hover:!bg-emerald-600 border-none transition-colors duration-200"
+                    className="!px-5 !py-3.5 !rounded-2xl !bg-emerald-500 hover:!bg-emerald-600 border-none transition-colors duration-200 flex items-center gap-2 font-semibold text-sm shadow-sm text-white"
                   >
-                    <ForwardIcon className="w-6 h-6 text-white" />
+                    <ForwardIcon className="w-5 h-5 text-white" />
+                    <span>Skip Rest</span>
                   </Button>
                 </div>
                 <Text size="xs" className="text-[#364152] text-center font-medium mt-1">
