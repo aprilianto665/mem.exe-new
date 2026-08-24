@@ -21,20 +21,24 @@ import { Switch } from '../../components/atoms/Switch';
 import { Input } from '../../components/atoms/Input';
 import { useLogout } from '../../hooks/useLogout';
 import { useSettingsStore } from '../../store/settingsStore';
+import { usePomodoroStore } from '../../store/pomodoroStore';
 import { updateUserSettings, SettingsError } from '../../services/settingsService';
 import toast from 'react-hot-toast';
 
-
-
 export const Settings = () => {
   const { handleLogout } = useLogout();
-  const { settings, isLoading, setSettings } = useSettingsStore();
+  const { settings, setSettings } = useSettingsStore();
+  const { session: pomodoroSession, fetchStatus: fetchPomodoroStatus } = usePomodoroStore();
   const [activeMode, setActiveMode] = useState<'default' | 'pomodoro'>('default');
   const [pomodoroConfig, setPomodoroConfig] = useState({
     focus: '25',
     shortRest: '5'
   });
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    fetchPomodoroStatus();
+  }, [fetchPomodoroStatus]);
 
   // Initialize state from store
   useEffect(() => {
@@ -47,8 +51,9 @@ export const Settings = () => {
     }
   }, [settings]);
 
+  const isTimerActive = !!pomodoroSession;
+
   const handlePomodoroChange = (key: keyof typeof pomodoroConfig, value: string) => {
-    // Allow empty string for clearing input
     if (value === '' || /^\d*$/.test(value)) {
       setPomodoroConfig(prev => ({ ...prev, [key]: value }));
     }
@@ -68,25 +73,12 @@ export const Settings = () => {
     );
   };
 
-  // Check if pomodoro config has changed from backend
-  const hasPomodoroConfigChanged = () => {
-    if (!settings) return true; // If no settings, allow save
-    
-    const currentFocus = parseInt(pomodoroConfig.focus);
-    const currentRest = parseInt(pomodoroConfig.shortRest);
-    const backendFocus = settings.pomodoro.focus_minutes;
-    const backendRest = settings.pomodoro.rest_minutes;
-
-    return (
-      isNaN(currentFocus) ||
-      isNaN(currentRest) ||
-      currentFocus !== backendFocus ||
-      currentRest !== backendRest
-    );
-  };
-
   const handleExecutionModeChange = async (mode: 'default' | 'pomodoro') => {
-    // Don't update if it's the same mode
+    if (isTimerActive) {
+      toast.error('Please complete or stop your active timer first');
+      return;
+    }
+
     if (activeMode === mode) {
       return;
     }
@@ -120,7 +112,6 @@ export const Settings = () => {
           rest_minutes: parseInt(pomodoroConfig.shortRest),
         },
       });
-      // Update store directly from response, no need to fetch again
       setSettings(updatedSettings);
       toast.success('Settings saved successfully');
     } catch (error) {
@@ -165,7 +156,6 @@ export const Settings = () => {
                 <Text size="base" weight="semibold" className="text-gray-700">Manage Mission</Text>
               </div>
               <ChevronRightIcon strokeWidth={2} className="w-5 h-5 text-gray-400" />
-
             </Link>
           </div>
         </div>
@@ -209,7 +199,12 @@ export const Settings = () => {
           </div>
 
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-4 flex items-center justify-between opacity-60">
+            <div 
+              className={`p-4 flex items-center justify-between transition-colors ${
+                isTimerActive ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50/50'
+              }`}
+              onClick={() => !isTimerActive && handleExecutionModeChange('default')}
+            >
               <div className="flex items-center gap-4">
                 <div className="text-[#7DB8E0]">
                   <ClockIcon className="w-6 h-6" />
@@ -218,14 +213,19 @@ export const Settings = () => {
               </div>
               <Switch 
                 checked={activeMode === 'default'} 
-                onChange={() => {}} 
-                disabled={true}
+                onChange={() => handleExecutionModeChange('default')} 
+                disabled={isTimerActive}
               />
             </div>
 
             <div className="border-t border-gray-50 mx-4" />
 
-            <div className="p-4 flex items-center justify-between opacity-60">
+            <div 
+              className={`p-4 flex items-center justify-between transition-colors ${
+                isTimerActive ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50/50'
+              }`}
+              onClick={() => !isTimerActive && handleExecutionModeChange('pomodoro')}
+            >
               <div className="flex items-center gap-4">
                 <div className="text-[#7DB8E0]">
                   <SparklesIcon className="w-6 h-6" />
@@ -234,8 +234,8 @@ export const Settings = () => {
               </div>
               <Switch 
                 checked={activeMode === 'pomodoro'} 
-                onChange={() => {}} 
-                disabled={true}
+                onChange={() => handleExecutionModeChange('pomodoro')} 
+                disabled={isTimerActive}
               />
             </div>
 
@@ -247,7 +247,7 @@ export const Settings = () => {
                 transition: 'max-height 0.3s ease-in-out, opacity 0.3s ease-in-out',
               }}
             >
-              <div className="px-4 pb-4 pt-2 opacity-60">
+              <div className="px-4 pb-4 pt-2">
                 <div className="flex gap-3 items-end">
                   <div className="relative flex-1 group">
                     <Input 
@@ -256,9 +256,9 @@ export const Settings = () => {
                       inputMode="numeric"
                       variant="noBorder"
                       value={pomodoroConfig.focus}
-                      onChange={() => {}}
+                      onChange={(e) => handlePomodoroChange('focus', e.target.value)}
                       className="!py-2 !pl-3 !pr-9 !rounded-xl text-center font-medium"
-                      disabled={true}
+                      disabled={isTimerActive || isSaving}
                     />
                     <span className="absolute right-3 bottom-[11px] text-[10px] text-gray-400 pointer-events-none">min</span>
                   </div>
@@ -270,9 +270,9 @@ export const Settings = () => {
                       inputMode="numeric"
                       variant="noBorder"
                       value={pomodoroConfig.shortRest}
-                      onChange={() => {}}
+                      onChange={(e) => handlePomodoroChange('shortRest', e.target.value)}
                       className="!py-2 !pl-3 !pr-9 !rounded-xl text-center font-medium"
-                      disabled={true}
+                      disabled={isTimerActive || isSaving}
                     />
                     <span className="absolute right-3 bottom-[11px] text-[10px] text-gray-400 pointer-events-none">min</span>
                   </div>
@@ -281,8 +281,8 @@ export const Settings = () => {
                 <div className="mt-4">
                   <Button 
                     className="w-full !py-2 !rounded-xl !text-sm"
-                    onClick={() => {}}
-                    disabled={true}
+                    onClick={handleSaveSettings}
+                    disabled={isTimerActive || isSaving || !isPomodoroConfigValid()}
                   >
                     <CheckIcon strokeWidth={2} className="w-4 h-4" />
                     Save Settings
@@ -321,8 +321,6 @@ export const Settings = () => {
             <AboutSection noCard={true} />
           </div>
         </div>
-
-
 
         <div className="mt-8">
           <Button

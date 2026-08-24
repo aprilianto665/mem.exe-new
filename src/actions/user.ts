@@ -93,6 +93,15 @@ export async function updateUserSettingsAction(payload: {
 }) {
   const userId = await getAuthUserId();
 
+  if (payload.execution_mode !== undefined) {
+    const activePomodoro = await prisma.active_pomodoro_sessions.findUnique({
+      where: { user_id: userId },
+    });
+    if (activePomodoro) {
+      throw new Error("Please complete or stop your active timer first");
+    }
+  }
+
   return await prisma.$transaction(async (tx: any) => {
     // 1. Update user settings if timezone or execution_mode is provided
     if (payload.timezone !== undefined || payload.execution_mode !== undefined) {

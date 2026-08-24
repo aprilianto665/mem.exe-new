@@ -5,6 +5,7 @@ import { PageTemplate } from '../../components/templates/PageTemplate';
 import { MissionList } from '../../components/organisms/MissionList';
 import { Text } from '../../components/atoms/Text';
 import { useMissionStore } from '../../store/missionStore';
+import { usePomodoroStore } from '../../store/pomodoroStore';
 import { isMissionScheduled } from '../../data/missionHistory';
 import { 
   BoltIcon 
@@ -20,10 +21,12 @@ export const Home = () => {
     deleteMission, 
     logMinutes
   } = useMissionStore();
+  const { fetchStatus: fetchPomodoroStatus } = usePomodoroStore();
 
   useEffect(() => {
     fetchDailyMissions();
-  }, [fetchDailyMissions]);
+    fetchPomodoroStatus();
+  }, [fetchDailyMissions, fetchPomodoroStatus]);
 
   if (isLoading && missions.length === 0) {
     return (
