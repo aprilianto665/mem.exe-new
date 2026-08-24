@@ -100,6 +100,16 @@ export async function updateUserSettingsAction(payload: {
     if (activePomodoro) {
       throw new Error("Please complete or stop your active timer first");
     }
+
+    const activeDefaultTimer = await prisma.mission_daily_progress.findFirst({
+      where: {
+        missions: { user_id: userId },
+        timer_started_at: { not: null },
+      },
+    });
+    if (activeDefaultTimer) {
+      throw new Error("Please complete or stop your active timer first");
+    }
   }
 
   return await prisma.$transaction(async (tx: any) => {

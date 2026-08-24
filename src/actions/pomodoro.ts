@@ -194,6 +194,16 @@ export async function startPomodoroAction(missionId: string): Promise<PomodoroSe
     throw new Error("Mission not found or unauthorized");
   }
 
+  const activeDefaultTimer = await prisma.mission_daily_progress.findFirst({
+    where: {
+      missions: { user_id: userId },
+      timer_started_at: { not: null },
+    },
+  });
+  if (activeDefaultTimer) {
+    throw new Error("Please complete or stop your active timer first");
+  }
+
   const focusMinutes = settings.pomodoro?.focus_minutes ?? 25;
   const restMinutes = settings.pomodoro?.rest_minutes ?? 5;
   const now = new Date();

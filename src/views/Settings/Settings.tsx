@@ -22,12 +22,14 @@ import { Input } from '../../components/atoms/Input';
 import { useLogout } from '../../hooks/useLogout';
 import { useSettingsStore } from '../../store/settingsStore';
 import { usePomodoroStore } from '../../store/pomodoroStore';
+import { useMissionStore } from '../../store/missionStore';
 import { updateUserSettings, SettingsError } from '../../services/settingsService';
 import toast from 'react-hot-toast';
 
 export const Settings = () => {
   const { handleLogout } = useLogout();
   const { settings, setSettings } = useSettingsStore();
+  const { missions, fetchDailyMissions } = useMissionStore();
   const { session: pomodoroSession, fetchStatus: fetchPomodoroStatus } = usePomodoroStore();
   const [activeMode, setActiveMode] = useState<'default' | 'pomodoro'>('default');
   const [pomodoroConfig, setPomodoroConfig] = useState({
@@ -38,7 +40,8 @@ export const Settings = () => {
 
   useEffect(() => {
     fetchPomodoroStatus();
-  }, [fetchPomodoroStatus]);
+    fetchDailyMissions();
+  }, [fetchPomodoroStatus, fetchDailyMissions]);
 
   // Initialize state from store
   useEffect(() => {
@@ -51,7 +54,8 @@ export const Settings = () => {
     }
   }, [settings]);
 
-  const isTimerActive = !!pomodoroSession;
+  const activeDefaultTimerMission = missions.find((m) => !!m.timerStartedAt);
+  const isTimerActive = !!pomodoroSession || !!activeDefaultTimerMission;
 
   const handlePomodoroChange = (key: keyof typeof pomodoroConfig, value: string) => {
     if (value === '' || /^\d*$/.test(value)) {
