@@ -1068,6 +1068,13 @@ export async function startTimerAction(id: string, timezoneArg?: string) {
     throw new Error("Unauthorized or mission not found");
   }
 
+  const activePomodoro = await prisma.active_pomodoro_sessions.findUnique({
+    where: { user_id: userId },
+  });
+  if (activePomodoro) {
+    throw new Error("Please complete or stop your active Pomodoro timer first");
+  }
+
   await prisma.$transaction(async (tx: any) => {
     // Ensure daily progress row exists
     await tx.mission_daily_progress.upsert({

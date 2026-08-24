@@ -73,9 +73,10 @@ model missions {
   updated_at              DateTime                 @default(now()) @db.Timestamptz(6)
   total_minutes_done      Int?                     @default(0)
   average_minutes_done    Int?                     @default(0)
-  last_stats_calc_date    DateTime?                @db.Date
-  mission_daily_progress  mission_daily_progress[]
-  users                   users                    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  last_stats_calc_date     DateTime?                @db.Date
+  mission_daily_progress   mission_daily_progress[]
+  active_pomodoro_sessions active_pomodoro_sessions[]
+  users                    users                    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([status], map: "idx_missions_status")
   @@index([user_id], map: "idx_missions_user_id")
@@ -90,6 +91,23 @@ model pomodoro_settings {
   updated_at    DateTime @default(now()) @db.Timestamp(6)
   users         users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
+
+model active_pomodoro_sessions {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String   @unique(map: "idx_active_pomodoro_sessions_user_id") @db.Uuid
+  mission_id        String   @db.Uuid
+  phase             String   @default("focus")
+  start_time        DateTime @default(now()) @db.Timestamptz(6)
+  expected_end_time DateTime @db.Timestamptz(6)
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @default(now()) @db.Timestamptz(6)
+
+  users             users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  missions          missions @relation(fields: [mission_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([mission_id], map: "idx_active_pomodoro_sessions_mission_id")
+}
+
 
 model schema_migrations {
   version BigInt  @id
@@ -137,6 +155,7 @@ model users {
   milestones               milestones[]
   missions                 missions[]
   pomodoro_settings        pomodoro_settings?
+  active_pomodoro_sessions active_pomodoro_sessions?
   user_auth_providers      user_auth_providers[]
   user_settings            user_settings?
 
