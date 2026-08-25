@@ -257,14 +257,14 @@ export const MissionCard = ({
                   <span>
                     {currentMinutes}m {String(currentSecs).padStart(2, '0')}s
                   </span>
-                  <span className="opacity-75 font-bold">/{mission.targetMinutes}m</span>
+                  <span>/{mission.targetMinutes}m</span>
                 </div>
               ) : (
                 <div className="text-xs font-bold whitespace-nowrap flex items-center gap-0.5">
                   <span>
                     {currentSecs > 0 ? `${currentMinutes}m ${String(currentSecs).padStart(2, '0')}s` : `${currentMinutes}m`}
                   </span>
-                  <span className="opacity-75 font-bold">/{mission.targetMinutes}m</span>
+                  <span>/{mission.targetMinutes}m</span>
                 </div>
               )}
             </ProgressBar>
