@@ -216,7 +216,7 @@ export const MissionCard = ({
         {/* Left: Type/Day, Title, and Progress */}
         <div className="flex-1 min-w-0">
           {/* Type and Day */}
-          <div className="flex items-center gap-3">
+          <div className={`flex items-center gap-3 ${isThisPomodoroActive ? 'justify-center' : ''}`}>
             <Text 
               size="xs" 
               weight="bold" 
@@ -237,7 +237,7 @@ export const MissionCard = ({
           </div>
 
           {/* Title */}
-          <div className="mb-3">
+          <div className={`mb-3 ${isThisPomodoroActive ? 'text-center' : ''}`}>
             <Text size="xl" weight="bold" className="text-gray-700">
               {mission.name}
             </Text>
