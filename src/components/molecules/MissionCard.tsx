@@ -314,7 +314,7 @@ export const MissionCard = ({
 
       {/* Expanded Pomodoro Section */}
       {isThisPomodoroActive && pomodoroSession && (
-        <div className="mt-6 pt-5 border-t border-gray-100 flex flex-col items-center justify-center animate-fadeIn">
+        <div className="mt-6 pt-5 border-t border-gray-100 w-full flex flex-col items-center justify-center animate-fadeIn">
           {/* Phase Header */}
           <div className="mb-1 text-center">
             {pomodoroSession.phase === 'focus' ? (
@@ -338,14 +338,14 @@ export const MissionCard = ({
           </div>
 
           {/* Controls & Helper Text */}
-          <div className="mt-4 flex flex-col items-center gap-2">
+          <div className="mt-4 w-full flex flex-col items-center gap-2">
             {pomodoroSession.phase === 'focus' ? (
               <>
                 <Button
                   variant="primary"
                   onClick={handleStopPomodoro}
                   disabled={isPomodoroLoading}
-                  className="!px-6 !py-3.5 !rounded-2xl !bg-rose-500 hover:!bg-rose-600 border-none transition-colors duration-200 flex items-center gap-2 font-semibold text-sm shadow-sm text-white"
+                  className="w-full !py-3.5 !rounded-2xl !bg-rose-500 hover:!bg-rose-600 border-none transition-colors duration-200 flex items-center justify-center gap-2 font-semibold text-sm shadow-sm text-white"
                 >
                   <StopIcon className="w-5 h-5 text-white" />
                   <span>Stop Focus</span>
@@ -356,12 +356,12 @@ export const MissionCard = ({
               </>
             ) : (
               <>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 w-full">
                   <Button
                     variant="primary"
                     onClick={handleStopPomodoro}
                     disabled={isPomodoroLoading}
-                    className="!px-5 !py-3.5 !rounded-2xl !bg-rose-500 hover:!bg-rose-600 border-none transition-colors duration-200 flex items-center gap-2 font-semibold text-sm shadow-sm text-white"
+                    className="flex-1 !py-3.5 !rounded-2xl !bg-rose-500 hover:!bg-rose-600 border-none transition-colors duration-200 flex items-center justify-center gap-2 font-semibold text-sm shadow-sm text-white"
                   >
                     <StopIcon className="w-5 h-5 text-white" />
                     <span>Stop</span>
@@ -370,7 +370,7 @@ export const MissionCard = ({
                     variant="primary"
                     onClick={handleSkipRest}
                     disabled={isPomodoroLoading}
-                    className="!px-5 !py-3.5 !rounded-2xl !bg-emerald-500 hover:!bg-emerald-600 border-none transition-colors duration-200 flex items-center gap-2 font-semibold text-sm shadow-sm text-white"
+                    className="flex-1 !py-3.5 !rounded-2xl !bg-emerald-500 hover:!bg-emerald-600 border-none transition-colors duration-200 flex items-center justify-center gap-2 font-semibold text-sm shadow-sm text-white"
                   >
                     <ForwardIcon className="w-5 h-5 text-white" />
                     <span>Skip Rest</span>
