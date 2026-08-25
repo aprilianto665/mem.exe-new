@@ -29,11 +29,11 @@ export const ProgressBar = ({
 
   return (
     <div className={`w-full ${className}`}>
-      <div className="w-full bg-gray-100 rounded-full h-7 relative flex items-center shadow-inner border border-gray-200/60 overflow-hidden">
+      <div className="w-full bg-gray-100 rounded-xl h-7 relative flex items-center shadow-inner border border-gray-200/60 overflow-hidden">
         {/* Inset progress container for offset gap */}
-        <div className="absolute inset-1 rounded-full overflow-hidden z-0 pointer-events-none">
+        <div className="absolute inset-1 rounded-lg overflow-hidden z-0 pointer-events-none">
           <div
-            className={`h-full absolute inset-y-0 left-0 transition-all duration-300 ease-out overflow-hidden ${colorClasses[variant]} ${additionalPct === 0 ? 'rounded-full' : 'rounded-l-full'}`}
+            className={`h-full absolute inset-y-0 left-0 transition-all duration-300 ease-out overflow-hidden ${colorClasses[variant]} ${additionalPct === 0 ? 'rounded-lg' : 'rounded-l-lg'}`}
             style={{ width: `${currentPct}%` }}
             role="progressbar"
             aria-valuenow={current}
@@ -49,7 +49,7 @@ export const ProgressBar = ({
           </div>
           {additionalPct > 0 && (
             <div
-              className="h-full absolute inset-y-0 bg-amber-300/90 rounded-r-full transition-all duration-300 overflow-hidden"
+              className="h-full absolute inset-y-0 bg-amber-300/90 rounded-r-lg transition-all duration-300 overflow-hidden"
               style={{ left: `${currentPct}%`, width: `${additionalPct}%` }}
             >
               {isRunning && (

@@ -253,18 +253,18 @@ export const MissionCard = ({
               isRunning={isRunningDefault || isThisPomodoroActive}
             >
               {isRunningDefault ? (
-                <div className="text-xs font-semibold text-emerald-600 whitespace-nowrap flex items-center gap-0.5">
-                  <span className="font-bold">
+                <div className="text-xs font-bold text-emerald-600 whitespace-nowrap flex items-center gap-0.5">
+                  <span>
                     {currentMinutes}m {String(currentSecs).padStart(2, '0')}s
                   </span>
-                  <span className="text-gray-500 font-medium">/{mission.targetMinutes}m</span>
+                  <span className="text-gray-500 font-bold">/{mission.targetMinutes}m</span>
                 </div>
               ) : (
-                <div className="text-xs font-semibold text-gray-700 whitespace-nowrap flex items-center gap-0.5">
-                  <span className="font-bold">
+                <div className="text-xs font-bold text-gray-700 whitespace-nowrap flex items-center gap-0.5">
+                  <span>
                     {currentSecs > 0 ? `${currentMinutes}m ${String(currentSecs).padStart(2, '0')}s` : `${currentMinutes}m`}
                   </span>
-                  <span className="text-gray-500 font-medium">/{mission.targetMinutes}m</span>
+                  <span className="text-gray-500 font-bold">/{mission.targetMinutes}m</span>
                 </div>
               )}
             </ProgressBar>
