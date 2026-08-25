@@ -13,6 +13,7 @@ export const ProgressBar = ({
   const currentPct = Math.min((current / target) * 100, 100);
   const projectedPct = Math.min(((current + projected) / target) * 100, 100);
   const additionalPct = Math.max(0, projectedPct - currentPct);
+  const effectivePct = Math.max(currentPct, projectedPct);
 
   const colorClasses = {
     blue: 'bg-[#7DB8E0]',
@@ -30,8 +31,16 @@ export const ProgressBar = ({
   return (
     <div className={`w-full ${className}`}>
       <div className="w-full bg-gray-100 rounded-xl h-7 relative flex items-center shadow-inner border border-gray-200/60 overflow-hidden">
+        {/* Dark text layer (visible over light gray background track) */}
+        {content && (
+          <div className={`absolute inset-0 z-0 w-full flex justify-end items-center pr-3.5 pointer-events-none select-none ${isRunning ? 'text-emerald-600' : 'text-gray-800'}`}>
+            {content}
+          </div>
+        )}
+
         {/* Inset progress container for offset gap */}
-        <div className="absolute inset-1 rounded-lg overflow-hidden z-0 pointer-events-none">
+        <div className="absolute inset-1 rounded-lg overflow-hidden z-10 pointer-events-none">
+          {/* Main Progress Bar Fill */}
           <div
             className={`h-full absolute inset-y-0 left-0 transition-all duration-300 ease-out overflow-hidden ${colorClasses[variant]} ${additionalPct === 0 ? 'rounded-lg' : 'rounded-l-lg'}`}
             style={{ width: `${currentPct}%` }}
@@ -47,6 +56,8 @@ export const ProgressBar = ({
               />
             )}
           </div>
+
+          {/* Projected Progress Bar Fill (e.g. Pomodoro Session) */}
           {additionalPct > 0 && (
             <div
               className="h-full absolute inset-y-0 bg-amber-300/90 rounded-r-lg transition-all duration-300 overflow-hidden"
@@ -60,12 +71,19 @@ export const ProgressBar = ({
               )}
             </div>
           )}
+
+          {/* Light/White text layer (clipped to exact progress bar width) */}
+          {content && (
+            <div 
+              className="absolute inset-0 w-full flex justify-end items-center pr-[10px] pointer-events-none select-none text-white font-bold transition-all duration-300"
+              style={{
+                clipPath: `inset(0 ${Math.max(0, 100 - effectivePct)}% 0 0)`
+              }}
+            >
+              {content}
+            </div>
+          )}
         </div>
-        {content && (
-          <div className="relative z-10 w-full flex justify-end items-center px-3.5 pointer-events-none select-none">
-            {content}
-          </div>
-        )}
       </div>
     </div>
   );
