@@ -6,7 +6,7 @@ import { BottomNavigation } from '../molecules/BottomNavigation';
 import { useRouter, usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 
-export const PageTemplate = ({ children }: PageTemplateProps) => {
+export const PageTemplate = ({ children, fixedLayout = false }: PageTemplateProps) => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -60,9 +60,11 @@ export const PageTemplate = ({ children }: PageTemplateProps) => {
 
   return (
     <>
-      <div className="min-h-screen app-background px-4">
-        <div className="max-w-xl mx-auto">
-          <Logo src="/mem_logo.png" alt="Mem Logo" />
+      <div className={`${fixedLayout ? 'h-[100dvh] flex flex-col overflow-hidden' : 'min-h-screen'} app-background px-4`}>
+        <div className={`max-w-xl mx-auto w-full ${fixedLayout ? 'flex-1 flex flex-col min-h-0 overflow-hidden' : ''}`}>
+          <div className="flex-shrink-0">
+            <Logo src="/mem_logo.png" alt="Mem Logo" />
+          </div>
           {children}
         </div>
       </div>

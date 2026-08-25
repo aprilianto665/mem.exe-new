@@ -30,10 +30,10 @@ export const Home = () => {
 
   if (isLoading && missions.length === 0) {
     return (
-      <PageTemplate>
-        <div className="flex flex-col min-h-screen pb-32">
+      <PageTemplate fixedLayout>
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {/* Top Premium Welcome Header */}
-          <div className="flex-shrink-0 mb-6 text-center">
+          <div className="flex-shrink-0 mb-4 text-center">
             <Text size="2xl" weight="bold" className="text-gray-800 mb-1">
               Discipline Dashboard
             </Text>
@@ -43,7 +43,7 @@ export const Home = () => {
           </div>
 
           {/* Premium Skeleton Loading Cards */}
-          <div className="space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-4 px-1 pt-1 pb-32 scrollbar-hide">
             {[1, 2, 3].map((i) => (
               <div key={i} className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-4 animate-pulse">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -95,11 +95,11 @@ export const Home = () => {
   };
 
   return (
-    <PageTemplate>
-      <div className="flex flex-col min-h-screen pb-32">
+    <PageTemplate fixedLayout>
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         
         {/* Top Premium Welcome Header */}
-        <div className="flex-shrink-0 mb-6 text-center">
+        <div className="flex-shrink-0 mb-4 text-center">
           <Text size="2xl" weight="bold" className="text-gray-800 mb-1">
             Discipline Dashboard
           </Text>
@@ -110,7 +110,7 @@ export const Home = () => {
 
         {/* Premium Offline Warning banner */}
         {error && (
-          <div className="flex-shrink-0 mb-6 bg-amber-50 border border-amber-200 rounded-3xl p-4 flex items-center gap-3 max-w-md mx-auto shadow-sm animate-fadeIn">
+          <div className="flex-shrink-0 mb-4 bg-amber-50 border border-amber-200 rounded-3xl p-4 flex items-center gap-3 max-w-md mx-auto shadow-sm animate-fadeIn">
             <BoltIcon className="w-6 h-6 text-amber-600 flex-shrink-0" />
             <div className="flex-1 min-w-0 text-left">
               <Text size="sm" weight="semibold" className="text-amber-800">
@@ -123,9 +123,8 @@ export const Home = () => {
           </div>
         )}
 
-        {/* Daily Habits List */}
-        <div className="space-y-4 animate-fadeIn">
-
+        {/* Daily Habits List - Wrapped in scrollable container extending to bottom behind navbar */}
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-4 px-1 pt-1 pb-32 animate-fadeIn scrollbar-hide">
           <MissionList 
             missions={activeTodayMissions} 
             onStartMission={handleStartMission}
