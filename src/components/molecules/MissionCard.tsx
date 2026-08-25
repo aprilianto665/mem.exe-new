@@ -243,31 +243,30 @@ export const MissionCard = ({
             </Text>
           </div>
 
-          {/* Progress Bar with inline label */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <ProgressBar 
-                current={currentMinutes} 
-                target={mission.targetMinutes}
-                projected={isThisPomodoroActive && pomodoroSession?.phase === 'focus' ? (settings?.pomodoro.focus_minutes || 25) : 0}
-                variant={progressBarVariant}
-              />
-            </div>
-            {isRunningDefault ? (
-              <Text size="sm" weight="semibold" className="text-emerald-500 whitespace-nowrap flex items-center gap-1">
-                <span className="font-bold">
-                  {currentMinutes}m {String(currentSecs).padStart(2, '0')}s
-                </span>
-                <span className="text-gray-400">/{mission.targetMinutes}m</span>
-              </Text>
-            ) : (
-              <Text size="sm" weight="semibold" className="text-gray-700 whitespace-nowrap flex items-center gap-1">
-                <span className="font-bold">
-                  {currentSecs > 0 ? `${currentMinutes}m ${String(currentSecs).padStart(2, '0')}s` : `${currentMinutes}m`}
-                </span>
-                <span className="text-gray-400">/{mission.targetMinutes}m</span>
-              </Text>
-            )}
+          {/* Progress Bar with inner label */}
+          <div className="w-full">
+            <ProgressBar 
+              current={currentMinutes} 
+              target={mission.targetMinutes}
+              projected={isThisPomodoroActive && pomodoroSession?.phase === 'focus' ? (settings?.pomodoro.focus_minutes || 25) : 0}
+              variant={progressBarVariant}
+            >
+              {isRunningDefault ? (
+                <div className="text-xs font-semibold text-emerald-600 whitespace-nowrap flex items-center gap-0.5">
+                  <span className="font-bold">
+                    {currentMinutes}m {String(currentSecs).padStart(2, '0')}s
+                  </span>
+                  <span className="text-gray-500 font-medium">/{mission.targetMinutes}m</span>
+                </div>
+              ) : (
+                <div className="text-xs font-semibold text-gray-700 whitespace-nowrap flex items-center gap-0.5">
+                  <span className="font-bold">
+                    {currentSecs > 0 ? `${currentMinutes}m ${String(currentSecs).padStart(2, '0')}s` : `${currentMinutes}m`}
+                  </span>
+                  <span className="text-gray-500 font-medium">/{mission.targetMinutes}m</span>
+                </div>
+              )}
+            </ProgressBar>
           </div>
         </div>
 

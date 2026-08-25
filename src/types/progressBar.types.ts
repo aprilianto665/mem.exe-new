@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 export type ProgressBarVariant = 'blue' | 'purple' | 'amber' | 'emerald';
 
 export interface ProgressBarProps {
@@ -6,4 +8,6 @@ export interface ProgressBarProps {
   projected?: number;
   variant?: ProgressBarVariant;
   className?: string;
+  children?: ReactNode;
+  label?: ReactNode;
 }
