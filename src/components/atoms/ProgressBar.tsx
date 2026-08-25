@@ -8,6 +8,7 @@ export const ProgressBar = ({
   className = '',
   children,
   label,
+  isRunning = false,
 }: ProgressBarProps) => {
   const currentPct = Math.min((current / target) * 100, 100);
   const projectedPct = Math.min(((current + projected) / target) * 100, 100);
@@ -22,24 +23,42 @@ export const ProgressBar = ({
 
   const content = children || label;
 
+  const stripeStyle = isRunning ? {
+    backgroundImage: 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.25) 0, rgba(255, 255, 255, 0.25) 8px, transparent 8px, transparent 16px)',
+  } : undefined;
+
   return (
     <div className={`w-full ${className}`}>
       <div className="w-full bg-gray-100 rounded-full h-7 relative flex items-center shadow-inner border border-gray-200/60 overflow-hidden">
         {/* Inset progress container for offset gap */}
         <div className="absolute inset-1 rounded-full overflow-hidden z-0 pointer-events-none">
           <div
-            className={`h-full absolute inset-y-0 left-0 transition-all duration-300 ease-out ${colorClasses[variant]} ${additionalPct === 0 ? 'rounded-full' : 'rounded-l-full'}`}
+            className={`h-full absolute inset-y-0 left-0 transition-all duration-300 ease-out overflow-hidden ${colorClasses[variant]} ${additionalPct === 0 ? 'rounded-full' : 'rounded-l-full'}`}
             style={{ width: `${currentPct}%` }}
             role="progressbar"
             aria-valuenow={current}
             aria-valuemin={0}
             aria-valuemax={target}
-          />
+          >
+            {isRunning && (
+              <div 
+                className="absolute inset-0 w-full h-full pointer-events-none"
+                style={stripeStyle}
+              />
+            )}
+          </div>
           {additionalPct > 0 && (
             <div
-              className="h-full absolute inset-y-0 bg-amber-300/90 rounded-r-full transition-all duration-300"
+              className="h-full absolute inset-y-0 bg-amber-300/90 rounded-r-full transition-all duration-300 overflow-hidden"
               style={{ left: `${currentPct}%`, width: `${additionalPct}%` }}
-            />
+            >
+              {isRunning && (
+                <div 
+                  className="absolute inset-0 w-full h-full pointer-events-none"
+                  style={stripeStyle}
+                />
+              )}
+            </div>
           )}
         </div>
         {content && (

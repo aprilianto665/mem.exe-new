@@ -10,4 +10,5 @@ export interface ProgressBarProps {
   className?: string;
   children?: ReactNode;
   label?: ReactNode;
+  isRunning?: boolean;
 }

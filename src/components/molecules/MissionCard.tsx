@@ -250,6 +250,7 @@ export const MissionCard = ({
               target={mission.targetMinutes}
               projected={isThisPomodoroActive && pomodoroSession?.phase === 'focus' ? (settings?.pomodoro.focus_minutes || 25) : 0}
               variant={progressBarVariant}
+              isRunning={isRunningDefault || isThisPomodoroActive}
             >
               {isRunningDefault ? (
                 <div className="text-xs font-semibold text-emerald-600 whitespace-nowrap flex items-center gap-0.5">
