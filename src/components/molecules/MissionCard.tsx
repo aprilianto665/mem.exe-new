@@ -209,7 +209,7 @@ export const MissionCard = ({
 
   return (
     <div 
-      className="bg-white rounded-3xl p-6 border border-gray-200 shadow-md transition-all duration-300"
+      className="bg-white rounded-3xl p-6 border border-gray-200 shadow-[3px_4px_0px_0px_rgba(0,0,0,0.06)] transition-all duration-300"
     >
       {/* Top Header / Collapsed Summary Row */}
       <div className="flex items-start justify-between gap-4">
