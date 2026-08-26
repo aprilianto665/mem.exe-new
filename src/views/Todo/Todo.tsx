@@ -7,6 +7,7 @@ import { Text } from '../../components/atoms/Text';
 import { Input } from '../../components/atoms/Input';
 import { Textarea } from '../../components/atoms/Textarea';
 import { ProgressBar } from '../../components/atoms/ProgressBar';
+import { Button } from '../../components/atoms/Button';
 import { useMissionStore } from '../../store/missionStore';
 import { 
   TrophyIcon, 
@@ -420,12 +421,12 @@ export const Todo = () => {
 
             {/* Inline Add Sub-Quest input for active milestones */}
             {!isCompleted && (
-              <div className="mt-2">
+              <div className="mt-3 pt-1">
                 {addingSubtaskForId === milestone.id ? (
-                  <div className="flex items-center gap-2 animate-fadeIn">
+                  <div className="space-y-2.5 animate-fadeIn">
                     <input
                       type="text"
-                      placeholder="Add quest milestone..."
+                      placeholder="Enter sub-quest milestone..."
                       value={inlineSubtaskTitle}
                       onChange={(e) => setInlineSubtaskTitle(e.target.value)}
                       onKeyDown={(e) => {
@@ -438,38 +439,43 @@ export const Todo = () => {
                         }
                       }}
                       autoFocus
-                      className="flex-1 text-xs py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#7DB8E0]"
+                      className="w-full text-sm py-3 px-4 bg-gray-50 border border-gray-200 rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#7DB8E0] transition-all"
                     />
-                    <button
-                      type="button"
-                      onClick={() => handleAddInlineSubtask(milestone.id)}
-                      className="bg-[#7DB8E0] hover:bg-[#6CA7CE] text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
-                    >
-                      Add
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAddingSubtaskForId(null);
-                        setInlineSubtaskTitle('');
-                      }}
-                      className="text-gray-400 hover:text-gray-600 px-2 py-1.5 text-xs font-bold cursor-pointer"
-                    >
-                      Cancel
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="primary"
+                        onClick={() => handleAddInlineSubtask(milestone.id)}
+                        className="flex-1 !py-3 !rounded-2xl font-semibold text-sm shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <PlusIcon className="w-4 h-4 text-white stroke-[2.5]" />
+                        <span>Save Sub-Quest</span>
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAddingSubtaskForId(null);
+                          setInlineSubtaskTitle('');
+                        }}
+                        className="px-5 py-3 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold text-sm transition-colors cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <button
+                  <Button
                     type="button"
+                    variant="primary"
                     onClick={() => {
                       setAddingSubtaskForId(milestone.id);
                       setInlineSubtaskTitle('');
                     }}
-                    className="inline-flex items-center gap-1.5 text-xs text-[#7DB8E0] hover:text-[#6CA7CE] font-bold py-1 px-2.5 rounded-xl hover:bg-sky-50/60 transition-all cursor-pointer"
+                    className="w-full !py-3 !rounded-2xl font-semibold text-sm shadow-sm flex items-center justify-center gap-2 cursor-pointer transition-all duration-200"
                   >
-                    <PlusIcon className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <PlusIcon className="w-4 h-4 text-white stroke-[2.5]" />
                     <span>Add Sub-Quest</span>
-                  </button>
+                  </Button>
                 )}
               </div>
             )}

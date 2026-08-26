@@ -138,14 +138,15 @@ export const CreateTodoForm = () => {
               variant="noBorder"
               className="flex-1"
             />
-            <button
+            <Button
               type="button"
+              variant="primary"
               onClick={handleAddSubtask}
-              className="flex items-center justify-center gap-1 bg-[#7DB8E0] hover:bg-[#6CA7CE] text-white px-3.5 py-2.5 rounded-2xl cursor-pointer text-xs font-bold transition-all flex-shrink-0 shadow-sm"
+              className="!py-2.5 !px-4 !rounded-2xl font-semibold text-xs shadow-sm flex items-center justify-center gap-1.5 flex-shrink-0"
             >
-              <PlusIcon className="w-4 h-4" />
-              Add Quest
-            </button>
+              <PlusIcon className="w-4 h-4 text-white stroke-[2.5]" />
+              <span>Add Quest</span>
+            </Button>
           </div>
         </div>
       </FormSection>
