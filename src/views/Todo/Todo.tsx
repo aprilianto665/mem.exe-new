@@ -215,8 +215,8 @@ export const Todo = () => {
     return (
       <div 
         key={milestone.id}
-        className={`bg-white rounded-3xl p-5 border border-gray-100 shadow-sm transition-all duration-200 ${
-          isCompleted ? 'bg-gray-50/60 border-gray-100 opacity-80' : ''
+        className={`bg-white rounded-3xl p-6 border border-gray-200 shadow-[3px_4px_0px_0px_rgba(0,0,0,0.06)] transition-all duration-300 ${
+          isCompleted ? 'bg-gray-50/60 opacity-80' : ''
         }`}
       >
         {/* Main Header / Edit Form */}
