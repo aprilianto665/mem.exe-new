@@ -98,6 +98,11 @@ export const Todo = () => {
     if (!milestone) return;
 
     const isCompleted = milestone.status === 'completed';
+    const subtasks = milestone.subtasks || [];
+    if (!isCompleted && subtasks.length > 0 && subtasks.some(s => !s.isCompleted)) {
+      toast.error('Complete all sub-quests before achieving the main objective!');
+      return;
+    }
 
     try {
       await toggleMilestone(id);
@@ -205,6 +210,7 @@ export const Todo = () => {
     const progressPct = totalSubtasks > 0 
       ? Math.round((completedSubtasks / totalSubtasks) * 100) 
       : (isCompleted ? 100 : 0);
+    const isLocked = !isCompleted && totalSubtasks > 0 && completedSubtasks < totalSubtasks;
 
     return (
       <div 
@@ -291,15 +297,26 @@ export const Todo = () => {
                 {/* Checklist button */}
                 <button
                   onClick={() => handleToggleMilestone(milestone.id)}
-                  className={`w-8 h-8 border-2 rounded-full cursor-pointer transition-all bg-white flex-shrink-0 ${
-                    isCompleted ? 'border-[#7DB8E0]' : 'border-gray-300 hover:border-[#7DB8E0]'
+                  disabled={isLocked}
+                  className={`w-8 h-8 border-2 rounded-full transition-all flex-shrink-0 ${
+                    isLocked
+                      ? 'border-gray-200 bg-gray-100/80 cursor-not-allowed opacity-50'
+                      : isCompleted
+                      ? 'border-[#7DB8E0] bg-white cursor-pointer'
+                      : 'border-gray-300 hover:border-[#7DB8E0] bg-white cursor-pointer'
                   }`}
                   style={{
                     backgroundImage: isCompleted
                       ? 'radial-gradient(circle, white 8px, #7DB8E0 8px, #7DB8E0 100%)'
                       : 'none',
                   }}
-                  title={isCompleted ? "Mark active" : "Mark achieved"}
+                  title={
+                    isLocked
+                      ? "Complete all sub-quests to achieve this objective"
+                      : isCompleted
+                      ? "Mark active"
+                      : "Mark achieved"
+                  }
                 />
 
                 {/* Dropdown Menu (Three dots) */}
