@@ -6,6 +6,7 @@ import { PageTemplate } from '../../components/templates/PageTemplate';
 import { Text } from '../../components/atoms/Text';
 import { Input } from '../../components/atoms/Input';
 import { Textarea } from '../../components/atoms/Textarea';
+import { ProgressBar } from '../../components/atoms/ProgressBar';
 import { useMissionStore } from '../../store/missionStore';
 import { 
   TrophyIcon, 
@@ -347,26 +348,18 @@ export const Todo = () => {
         {/* Sub-Quests Section (MMO Quest Line) */}
         {!isEditing && (
           <div className="mt-4 pt-3.5 border-t border-gray-100/80">
-            {/* Progress Bar Header */}
+            {/* Progress Bar (Matching Mission Card) */}
             {totalSubtasks > 0 && (
-              <div className="mb-3 space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-gray-500 flex items-center gap-1.5">
-                    <span className="text-sm">🎯</span> Quest Progress
-                    <span className="text-gray-400 font-medium">({completedSubtasks}/{totalSubtasks})</span>
-                  </span>
-                  <span className={`${progressPct === 100 ? 'text-emerald-500' : 'text-[#7DB8E0]'}`}>
-                    {progressPct}%
-                  </span>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
-                  <div
-                    className={`h-full transition-all duration-500 ease-out rounded-full ${
-                      progressPct === 100 ? 'bg-emerald-400' : 'bg-[#7DB8E0]'
-                    }`}
-                    style={{ width: `${progressPct}%` }}
-                  />
-                </div>
+              <div className="mb-3.5 w-full">
+                <ProgressBar
+                  current={completedSubtasks}
+                  target={totalSubtasks}
+                  variant={progressPct === 100 ? 'emerald' : 'blue'}
+                >
+                  <div className="text-xs font-bold whitespace-nowrap">
+                    {completedSubtasks}/{totalSubtasks}
+                  </div>
+                </ProgressBar>
               </div>
             )}
 
