@@ -46,6 +46,7 @@ export const Todo = () => {
   // Inline Sub-quest creation state
   const [addingSubtaskForId, setAddingSubtaskForId] = useState<string | null>(null);
   const [inlineSubtaskTitle, setInlineSubtaskTitle] = useState('');
+  const [selectedSubtaskId, setSelectedSubtaskId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMilestones();
@@ -54,6 +55,7 @@ export const Todo = () => {
   useEffect(() => {
     const handleOutsideClick = () => {
       setActiveDropdownId(null);
+      setSelectedSubtaskId(null);
     };
     window.addEventListener('click', handleOutsideClick);
     return () => window.removeEventListener('click', handleOutsideClick);
@@ -393,44 +395,67 @@ export const Todo = () => {
 
                 {subtasks.map((subtask) => {
                   const isSubDone = subtask.isCompleted;
+                  const isSelected = selectedSubtaskId === subtask.id;
                   return (
                     <div
                       key={subtask.id}
                       className="relative z-10 flex items-center justify-between gap-2.5 group py-0.5"
                     >
+                      {/* Subtask Checkbox only */}
                       <button
                         type="button"
-                        onClick={() => handleToggleSubtask(subtask.id, subtask.title, isSubDone)}
-                        className="flex items-center gap-2.5 text-left flex-1 min-w-0 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleSubtask(subtask.id, subtask.title, isSubDone);
+                        }}
+                        className={`w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all duration-200 bg-white cursor-pointer ${
+                          isSubDone
+                            ? 'border-[#7DB8E0]'
+                            : 'border-gray-300 hover:border-[#7DB8E0]'
+                        }`}
+                        style={{
+                          backgroundImage: isSubDone
+                            ? 'radial-gradient(circle, white 5px, #7DB8E0 5px, #7DB8E0 100%)'
+                            : 'none',
+                        }}
+                        title={isSubDone ? "Mark incomplete" : "Mark completed"}
+                      />
+
+                      {/* Subtask Title (Click to toggle delete button visibility) */}
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedSubtaskId(isSelected ? null : subtask.id);
+                        }}
+                        className="flex-1 min-w-0 cursor-pointer select-none py-0.5"
                       >
-                        <div
-                          className={`w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all duration-200 bg-white ${
-                            isSubDone
-                              ? 'border-[#7DB8E0]'
-                              : 'border-gray-300 group-hover:border-[#7DB8E0]'
-                          }`}
-                          style={{
-                            backgroundImage: isSubDone
-                              ? 'radial-gradient(circle, white 5px, #7DB8E0 5px, #7DB8E0 100%)'
-                              : 'none',
-                          }}
-                        />
                         <span
                           className={`text-xs break-words transition-all duration-200 ${
                             isSubDone
                               ? 'line-through text-gray-400 font-normal'
+                              : isSelected
+                              ? 'text-gray-900 font-bold'
                               : 'text-gray-700 font-medium group-hover:text-gray-900'
                           }`}
                         >
                           {subtask.title}
                         </span>
-                      </button>
+                      </div>
 
+                      {/* Delete Button (Visible on hover, or when title is selected/tapped) */}
                       {!isCompleted && (
                         <button
                           type="button"
-                          onClick={() => handleDeleteSubtask(subtask.id)}
-                          className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 p-1 transition-all cursor-pointer flex-shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSubtask(subtask.id);
+                            if (isSelected) setSelectedSubtaskId(null);
+                          }}
+                          className={`p-1.5 rounded-lg transition-all cursor-pointer flex-shrink-0 ${
+                            isSelected
+                              ? 'opacity-100 text-red-500 bg-red-50 hover:bg-red-100'
+                              : 'opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500'
+                          }`}
                           title="Delete sub-quest"
                         >
                           <TrashIcon className="w-3.5 h-3.5" />
