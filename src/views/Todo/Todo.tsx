@@ -15,7 +15,8 @@ import {
   PencilIcon,
   TrashIcon,
   ChevronRightIcon,
-  EllipsisVerticalIcon
+  EllipsisVerticalIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
@@ -28,7 +29,10 @@ export const Todo = () => {
     fetchMilestones,
     deleteMilestone, 
     toggleMilestone,
-    updateMilestone
+    updateMilestone,
+    addSubtask,
+    toggleSubtask,
+    deleteSubtask,
   } = useMissionStore();
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -37,6 +41,10 @@ export const Todo = () => {
   const [editDeadline, setEditDeadline] = useState('');
   const [isCompletedExpanded, setIsCompletedExpanded] = useState(false);
   const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
+
+  // Inline Sub-quest creation state
+  const [addingSubtaskForId, setAddingSubtaskForId] = useState<string | null>(null);
+  const [inlineSubtaskTitle, setInlineSubtaskTitle] = useState('');
 
   useEffect(() => {
     fetchMilestones();
@@ -133,6 +141,39 @@ export const Todo = () => {
     }
   };
 
+  const handleToggleSubtask = async (subtaskId: string, title: string, currentStatus: boolean) => {
+    try {
+      await toggleSubtask(subtaskId);
+      if (!currentStatus) {
+        toast.success(`Sub-quest "${title}" completed! ✨`);
+      }
+    } catch (err: any) {
+      toast.error('Failed to update sub-quest.');
+    }
+  };
+
+  const handleAddInlineSubtask = async (milestoneId: string) => {
+    const trimmed = inlineSubtaskTitle.trim();
+    if (!trimmed) return;
+    try {
+      await addSubtask(milestoneId, trimmed);
+      setInlineSubtaskTitle('');
+      setAddingSubtaskForId(null);
+      toast.success('Sub-quest added! 🎯');
+    } catch (err: any) {
+      toast.error('Failed to add sub-quest.');
+    }
+  };
+
+  const handleDeleteSubtask = async (subtaskId: string) => {
+    try {
+      await deleteSubtask(subtaskId);
+      toast.success('Sub-quest removed.');
+    } catch (err: any) {
+      toast.error('Failed to remove sub-quest.');
+    }
+  };
+
   const activeMilestones = milestones.filter(m => m.status !== 'completed');
   const completedMilestones = milestones.filter(m => m.status === 'completed');
 
@@ -157,15 +198,22 @@ export const Todo = () => {
   const renderMilestoneCard = (milestone: typeof milestones[0]) => {
     const isCompleted = milestone.status === 'completed';
     const isEditing = editingId === milestone.id;
+    const subtasks = milestone.subtasks || [];
+    const totalSubtasks = subtasks.length;
+    const completedSubtasks = subtasks.filter(s => s.isCompleted).length;
+    const progressPct = totalSubtasks > 0 
+      ? Math.round((completedSubtasks / totalSubtasks) * 100) 
+      : (isCompleted ? 100 : 0);
 
     return (
       <div 
         key={milestone.id}
-        className={`bg-white rounded-3xl p-5 border border-gray-100 shadow-sm ${
-          isCompleted ? 'bg-gray-50/50 border-gray-100 opacity-75' : ''
+        className={`bg-white rounded-3xl p-5 border border-gray-100 shadow-sm transition-all duration-200 ${
+          isCompleted ? 'bg-gray-50/60 border-gray-100 opacity-80' : ''
         }`}
       >
-        <div className="flex items-center justify-between gap-4">
+        {/* Main Header / Edit Form */}
+        <div className="flex items-start justify-between gap-4">
           {isEditing ? (
             <div className="flex-1 min-w-0 text-left space-y-3">
               <Input
@@ -216,7 +264,7 @@ export const Todo = () => {
               {/* Left part: Title, Description, and Deadline */}
               <div className="flex-1 min-w-0 text-left">
                 {milestone.deadline && (
-                  <div className="flex items-center gap-1 mb-1.5 text-[11px] text-[#7DB8E0] font-bold bg-sky-50 px-2 py-0.5 rounded-full w-max border border-sky-100/50">
+                  <div className="flex items-center gap-1 mb-1.5 text-[11px] text-[#7DB8E0] font-bold bg-sky-50 px-2.5 py-0.5 rounded-full w-max border border-sky-100/50">
                     <CalendarIcon className="w-3.5 h-3.5" />
                     <span>Target: {new Date(milestone.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                   </div>
@@ -238,20 +286,17 @@ export const Todo = () => {
               </div>
 
               {/* Right part: Checklist and Options Dropdown */}
-              <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex items-center gap-3 flex-shrink-0 mt-0.5">
                 {/* Checklist button */}
                 <button
                   onClick={() => handleToggleMilestone(milestone.id)}
-                  className={`w-8 h-8 border-2 rounded-full cursor-pointer transition-all bg-white flex-shrink-0 ${
-                    isCompleted ? 'border-[#7DB8E0]' : 'border-gray-300 hover:border-[#7DB8E0]'
+                  className={`w-8 h-8 border-2 rounded-full cursor-pointer transition-all bg-white flex items-center justify-center flex-shrink-0 ${
+                    isCompleted ? 'border-[#7DB8E0] bg-[#7DB8E0]' : 'border-gray-300 hover:border-[#7DB8E0]'
                   }`}
-                  style={{
-                    backgroundImage: isCompleted
-                      ? 'radial-gradient(circle, white 8px, #7DB8E0 8px, #7DB8E0 100%)'
-                      : 'none',
-                  }}
                   title={isCompleted ? "Mark active" : "Mark achieved"}
-                />
+                >
+                  {isCompleted && <CheckIcon className="w-5 h-5 text-white stroke-[3]" />}
+                </button>
 
                 {/* Dropdown Menu (Three dots) */}
                 <div className="relative">
@@ -298,6 +343,145 @@ export const Todo = () => {
             </>
           )}
         </div>
+
+        {/* Sub-Quests Section (MMO Quest Line) */}
+        {!isEditing && (
+          <div className="mt-4 pt-3.5 border-t border-gray-100/80">
+            {/* Progress Bar Header */}
+            {totalSubtasks > 0 && (
+              <div className="mb-3 space-y-1.5">
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span className="text-gray-500 flex items-center gap-1.5">
+                    <span className="text-sm">🎯</span> Quest Progress
+                    <span className="text-gray-400 font-medium">({completedSubtasks}/{totalSubtasks})</span>
+                  </span>
+                  <span className={`${progressPct === 100 ? 'text-emerald-500' : 'text-[#7DB8E0]'}`}>
+                    {progressPct}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden shadow-inner">
+                  <div
+                    className={`h-full transition-all duration-500 ease-out rounded-full ${
+                      progressPct === 100 ? 'bg-emerald-400' : 'bg-[#7DB8E0]'
+                    }`}
+                    style={{ width: `${progressPct}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Subtasks Quest Line Checklist */}
+            {totalSubtasks > 0 && (
+              <div className="relative pl-1 space-y-2 mb-3">
+                {totalSubtasks > 1 && (
+                  <div className="absolute left-[13px] top-3 bottom-3 w-0.5 bg-gray-100" />
+                )}
+
+                {subtasks.map((subtask) => {
+                  const isSubDone = subtask.isCompleted;
+                  return (
+                    <div
+                      key={subtask.id}
+                      className="relative z-10 flex items-center justify-between gap-2.5 group py-0.5"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleToggleSubtask(subtask.id, subtask.title, isSubDone)}
+                        className="flex items-center gap-2.5 text-left flex-1 min-w-0 cursor-pointer"
+                      >
+                        <div
+                          className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+                            isSubDone
+                              ? 'bg-[#7DB8E0] border-[#7DB8E0] text-white shadow-xs'
+                              : 'border-gray-300 bg-white group-hover:border-[#7DB8E0]'
+                          }`}
+                        >
+                          {isSubDone && <CheckIcon className="w-3.5 h-3.5 stroke-[3]" />}
+                        </div>
+                        <span
+                          className={`text-xs break-words transition-all duration-200 ${
+                            isSubDone
+                              ? 'line-through text-gray-400 font-normal'
+                              : 'text-gray-700 font-medium group-hover:text-gray-900'
+                          }`}
+                        >
+                          {subtask.title}
+                        </span>
+                      </button>
+
+                      {!isCompleted && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSubtask(subtask.id)}
+                          className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 p-1 transition-all cursor-pointer flex-shrink-0"
+                          title="Delete sub-quest"
+                        >
+                          <TrashIcon className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Inline Add Sub-Quest input for active milestones */}
+            {!isCompleted && (
+              <div className="mt-2">
+                {addingSubtaskForId === milestone.id ? (
+                  <div className="flex items-center gap-2 animate-fadeIn">
+                    <input
+                      type="text"
+                      placeholder="Add quest milestone..."
+                      value={inlineSubtaskTitle}
+                      onChange={(e) => setInlineSubtaskTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddInlineSubtask(milestone.id);
+                        } else if (e.key === 'Escape') {
+                          setAddingSubtaskForId(null);
+                          setInlineSubtaskTitle('');
+                        }
+                      }}
+                      autoFocus
+                      className="flex-1 text-xs py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#7DB8E0]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleAddInlineSubtask(milestone.id)}
+                      className="bg-[#7DB8E0] hover:bg-[#6CA7CE] text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                    >
+                      Add
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAddingSubtaskForId(null);
+                        setInlineSubtaskTitle('');
+                      }}
+                      className="text-gray-400 hover:text-gray-600 px-2 py-1.5 text-xs font-bold cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddingSubtaskForId(milestone.id);
+                      setInlineSubtaskTitle('');
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs text-[#7DB8E0] hover:text-[#6CA7CE] font-bold py-1 px-2.5 rounded-xl hover:bg-sky-50/60 transition-all cursor-pointer"
+                  >
+                    <PlusIcon className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Add Sub-Quest</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
@@ -392,3 +576,4 @@ export const Todo = () => {
     </PageTemplate>
   );
 };
+

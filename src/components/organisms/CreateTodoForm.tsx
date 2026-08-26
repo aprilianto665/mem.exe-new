@@ -4,7 +4,7 @@ import { Input } from '../atoms/Input';
 import { Textarea } from '../atoms/Textarea';
 import { FormSection } from '../molecules/FormSection';
 import { Button } from '../atoms/Button';
-import { TrophyIcon } from '@heroicons/react/24/outline';
+import { TrophyIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useMissionStore } from '../../store/missionStore';
 import toast from 'react-hot-toast';
 
@@ -15,6 +15,26 @@ export const CreateTodoForm = () => {
   const [milestoneTitle, setMilestoneTitle] = useState('');
   const [milestoneDesc, setMilestoneDesc] = useState('');
   const [milestoneDeadline, setMilestoneDeadline] = useState('');
+  const [subtasks, setSubtasks] = useState<string[]>([]);
+  const [newSubtask, setNewSubtask] = useState('');
+
+  const handleAddSubtask = () => {
+    const trimmed = newSubtask.trim();
+    if (!trimmed) return;
+    setSubtasks((prev) => [...prev, trimmed]);
+    setNewSubtask('');
+  };
+
+  const handleRemoveSubtask = (index: number) => {
+    setSubtasks((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleKeyDownSubtask = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddSubtask();
+    }
+  };
 
   const handleCreateMilestone = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,11 +43,17 @@ export const CreateTodoForm = () => {
       return;
     }
 
+    const finalSubtasks = [...subtasks];
+    if (newSubtask.trim()) {
+      finalSubtasks.push(newSubtask.trim());
+    }
+
     try {
       await addMilestone({
         title: milestoneTitle,
         description: milestoneDesc || undefined,
         deadline: milestoneDeadline || undefined,
+        subtasks: finalSubtasks.length > 0 ? finalSubtasks : undefined,
       });
 
       toast.success(`Objective "${milestoneTitle}" added!`);
@@ -74,6 +100,56 @@ export const CreateTodoForm = () => {
         />
       </FormSection>
 
+      <FormSection title="SUB-QUESTS / MILESTONES (OPTIONAL)">
+        <div className="space-y-3">
+          {subtasks.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {subtasks.map((task, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between gap-2 p-2.5 bg-gray-50/80 rounded-2xl border border-gray-100 animate-fadeIn"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#7DB8E0]/15 text-[#7DB8E0] text-[11px] font-bold flex items-center justify-center">
+                      {idx + 1}
+                    </span>
+                    <span className="text-sm font-medium text-gray-700 truncate">
+                      {task}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSubtask(idx)}
+                    className="text-gray-400 hover:text-red-500 p-1 transition-colors cursor-pointer"
+                  >
+                    <XMarkIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="e.g. Selesaikan modul tata bahasa..."
+              value={newSubtask}
+              onChange={(e) => setNewSubtask(e.target.value)}
+              onKeyDown={handleKeyDownSubtask}
+              variant="noBorder"
+              className="flex-1"
+            />
+            <button
+              type="button"
+              onClick={handleAddSubtask}
+              className="flex items-center justify-center gap-1 bg-[#7DB8E0] hover:bg-[#6CA7CE] text-white px-3.5 py-2.5 rounded-2xl cursor-pointer text-xs font-bold transition-all flex-shrink-0 shadow-sm"
+            >
+              <PlusIcon className="w-4 h-4" />
+              Add Quest
+            </button>
+          </div>
+        </div>
+      </FormSection>
+
       <div className="pt-4">
         <Button
           type="submit"
@@ -87,3 +163,4 @@ export const CreateTodoForm = () => {
     </form>
   );
 };
+

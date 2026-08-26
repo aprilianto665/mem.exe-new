@@ -1361,6 +1361,11 @@ export async function fetchTimelineDataAction(timezoneArg?: string) {
 
   const milestones = await prisma.milestones.findMany({
     where: { user_id: userId },
+    include: {
+      subtasks: {
+        orderBy: { order_index: "asc" },
+      },
+    },
     orderBy: { created_at: "desc" },
   });
 
@@ -1438,7 +1443,7 @@ export async function fetchTimelineDataAction(timezoneArg?: string) {
     status: h.status,
   }));
 
-  const mappedMilestones = milestones.map((m: prisma_milestones) => ({
+  const mappedMilestones = milestones.map((m: any) => ({
     id: m.id,
     title: m.title,
     description: m.description,
@@ -1446,6 +1451,16 @@ export async function fetchTimelineDataAction(timezoneArg?: string) {
     status: m.status,
     created_at: m.created_at.toISOString(),
     completed_at: m.completed_at ? m.completed_at.toISOString() : null,
+    subtasks: (m.subtasks || []).map((s: any) => ({
+      id: s.id,
+      milestone_id: s.milestone_id,
+      title: s.title,
+      is_completed: s.is_completed,
+      order_index: s.order_index,
+      created_at: s.created_at.toISOString(),
+      updated_at: s.updated_at.toISOString(),
+      completed_at: s.completed_at ? s.completed_at.toISOString() : null,
+    })),
   }));
 
   return {

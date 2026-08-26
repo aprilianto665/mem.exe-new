@@ -33,10 +33,26 @@ model milestones {
   updated_at   DateTime              @default(now()) @db.Timestamptz(6)
   completed_at DateTime?             @db.Timestamptz(6)
   users        users                 @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  subtasks     milestone_subtasks[]
 
   @@index([status], map: "idx_milestones_status")
   @@index([user_id], map: "idx_milestones_user_id")
 }
+
+model milestone_subtasks {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  milestone_id String     @db.Uuid
+  title        String     @db.VarChar(255)
+  is_completed Boolean    @default(false)
+  order_index  Int        @default(0)
+  created_at   DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime   @default(now()) @db.Timestamptz(6)
+  completed_at DateTime?  @db.Timestamptz(6)
+  milestones   milestones @relation(fields: [milestone_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([milestone_id], map: "idx_milestone_subtasks_milestone_id")
+}
+
 
 model mission_daily_progress {
   id               String                             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid

@@ -19,7 +19,21 @@ import {
   updateMilestoneAction,
   deleteMilestoneAction,
   toggleMilestoneAction,
+  addSubtaskAction,
+  toggleSubtaskAction,
+  deleteSubtaskAction,
+  updateSubtaskAction,
 } from '../actions/milestones';
+
+export interface MilestoneSubtask {
+  id: string;
+  milestoneId: string;
+  title: string;
+  isCompleted: boolean;
+  orderIndex: number;
+  createdAt: string;
+  completedAt?: string;
+}
 
 export interface Milestone {
   id: string;
@@ -29,6 +43,7 @@ export interface Milestone {
   status: 'active' | 'completed';
   createdAt: string;
   completedAt?: string;
+  subtasks: MilestoneSubtask[];
 }
 
 export interface DailyProgress {
@@ -66,10 +81,14 @@ export interface MissionStoreState {
   logMinutes: (id: string, minutes: number) => Promise<void>;
   startTimer: (id: string) => Promise<void>;
   pauseTimer: (id: string, additionalSeconds?: number) => Promise<void>;
-  addMilestone: (milestone: Omit<Milestone, 'id' | 'createdAt' | 'status'>) => Promise<void>;
+  addMilestone: (milestone: Omit<Milestone, 'id' | 'createdAt' | 'status' | 'subtasks'> & { subtasks?: string[] }) => Promise<void>;
   updateMilestone: (id: string, updates: Partial<Milestone>) => Promise<void>;
   deleteMilestone: (id: string) => Promise<void>;
   toggleMilestone: (id: string) => Promise<void>;
+  addSubtask: (milestoneId: string, title: string) => Promise<void>;
+  toggleSubtask: (subtaskId: string) => Promise<void>;
+  deleteSubtask: (subtaskId: string) => Promise<void>;
+  updateSubtask: (subtaskId: string, title: string) => Promise<void>;
   setIsLoading: (loading: boolean) => void;
 }
 
@@ -261,7 +280,16 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
         deadline: m.deadline || undefined,
         status: m.status as any,
         createdAt: m.created_at,
-        completedAt: m.completed_at || undefined
+        completedAt: m.completed_at || undefined,
+        subtasks: (m.subtasks || []).map((s: any): MilestoneSubtask => ({
+          id: s.id,
+          milestoneId: s.milestone_id || s.milestoneId,
+          title: s.title,
+          isCompleted: s.is_completed ?? s.isCompleted ?? false,
+          orderIndex: s.order_index ?? s.orderIndex ?? 0,
+          createdAt: s.created_at || s.createdAt,
+          completedAt: s.completed_at || s.completedAt || undefined,
+        })),
       }));
 
       const mappedMissions = backendMissions.map((item: any): Mission => {
@@ -408,7 +436,16 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
         deadline: m.deadline || undefined,
         status: m.status as any,
         createdAt: m.created_at,
-        completedAt: m.completed_at || undefined
+        completedAt: m.completed_at || undefined,
+        subtasks: (m.subtasks || []).map((s: any): MilestoneSubtask => ({
+          id: s.id,
+          milestoneId: s.milestone_id || s.milestoneId,
+          title: s.title,
+          isCompleted: s.is_completed ?? s.isCompleted ?? false,
+          orderIndex: s.order_index ?? s.orderIndex ?? 0,
+          createdAt: s.created_at || s.createdAt,
+          completedAt: s.completed_at || s.completedAt || undefined,
+        })),
       }));
 
       set({ milestones: mappedMilestones, isLoading: false });
@@ -547,7 +584,8 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
       await addMilestoneAction({
         title: milestone.title,
         description: milestone.description || "",
-        deadline: milestone.deadline || undefined
+        deadline: milestone.deadline || undefined,
+        subtasks: milestone.subtasks || undefined,
       });
       await get().fetchMilestones();
     } catch (err: any) {
@@ -583,6 +621,46 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
   toggleMilestone: async (id) => {
     try {
       await toggleMilestoneAction(id);
+      await get().fetchMilestones();
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  },
+
+  addSubtask: async (milestoneId, title) => {
+    try {
+      await addSubtaskAction(milestoneId, title);
+      await get().fetchMilestones();
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  },
+
+  toggleSubtask: async (subtaskId) => {
+    try {
+      await toggleSubtaskAction(subtaskId);
+      await get().fetchMilestones();
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  },
+
+  deleteSubtask: async (subtaskId) => {
+    try {
+      await deleteSubtaskAction(subtaskId);
+      await get().fetchMilestones();
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  },
+
+  updateSubtask: async (subtaskId, title) => {
+    try {
+      await updateSubtaskAction(subtaskId, title);
       await get().fetchMilestones();
     } catch (err: any) {
       console.error(err);
