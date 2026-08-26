@@ -8,10 +8,11 @@ export const ProgressBar = ({
   className = '',
   children,
   label,
+  leftLabel,
   isRunning = false,
 }: ProgressBarProps) => {
-  const currentPct = Math.min((current / target) * 100, 100);
-  const projectedPct = Math.min(((current + projected) / target) * 100, 100);
+  const currentPct = target > 0 ? Math.min((current / target) * 100, 100) : 0;
+  const projectedPct = target > 0 ? Math.min(((current + projected) / target) * 100, 100) : 0;
   const additionalPct = Math.max(0, projectedPct - currentPct);
   const effectivePct = Math.max(currentPct, projectedPct);
 
@@ -32,9 +33,18 @@ export const ProgressBar = ({
     <div className={`w-full ${className}`}>
       <div className="w-full bg-gray-100 rounded-xl h-7 relative flex items-center shadow-inner border border-gray-200/60 overflow-hidden">
         {/* Dark text layer (visible over light gray background track) */}
-        {content && (
-          <div className={`absolute inset-0 z-0 w-full flex justify-end items-center pr-3.5 pointer-events-none select-none ${isRunning ? 'text-emerald-600' : 'text-gray-800'}`}>
-            {content}
+        {(leftLabel || content) && (
+          <div className={`absolute inset-0 z-0 w-full flex ${leftLabel ? 'justify-between' : 'justify-end'} items-center px-3.5 pointer-events-none select-none ${isRunning ? 'text-emerald-600' : 'text-gray-800'}`}>
+            {leftLabel && (
+              <span className="text-xs font-bold text-gray-500">
+                {leftLabel}
+              </span>
+            )}
+            {content && (
+              <div className="text-xs font-bold">
+                {content}
+              </div>
+            )}
           </div>
         )}
 
@@ -73,14 +83,23 @@ export const ProgressBar = ({
           )}
 
           {/* Light/White text layer (clipped to exact progress bar width) */}
-          {content && (
+          {(leftLabel || content) && (
             <div 
-              className="absolute inset-0 w-full flex justify-end items-center pr-[10px] pointer-events-none select-none text-white font-bold transition-all duration-300"
+              className={`absolute inset-0 w-full flex ${leftLabel ? 'justify-between' : 'justify-end'} items-center px-[10px] pointer-events-none select-none text-white font-bold transition-all duration-300`}
               style={{
                 clipPath: `inset(0 ${Math.max(0, 100 - effectivePct)}% 0 0)`
               }}
             >
-              {content}
+              {leftLabel && (
+                <span className="text-xs font-bold text-white">
+                  {leftLabel}
+                </span>
+              )}
+              {content && (
+                <div className="text-xs font-bold text-white">
+                  {content}
+                </div>
+              )}
             </div>
           )}
         </div>

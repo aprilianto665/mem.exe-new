@@ -356,6 +356,7 @@ export const Todo = () => {
                   current={completedSubtasks}
                   target={totalSubtasks}
                   variant={progressPct === 100 ? 'emerald' : 'blue'}
+                  leftLabel="Quest Progress"
                 >
                   <div className="text-xs font-bold whitespace-nowrap">
                     {completedSubtasks}/{totalSubtasks}
