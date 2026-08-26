@@ -440,7 +440,7 @@ export const Todo = () => {
                         }
                       }}
                       autoFocus
-                      className="w-full text-sm py-3 px-4 bg-gray-50 border border-gray-200 rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#7DB8E0] transition-all"
+                      className="w-full text-sm py-3 px-4 bg-[#F8FAFC] border-0 rounded-2xl text-gray-800 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 transition-all"
                     />
                     <div className="flex items-center gap-2">
                       <Button
