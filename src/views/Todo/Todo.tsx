@@ -292,13 +292,16 @@ export const Todo = () => {
                 {/* Checklist button */}
                 <button
                   onClick={() => handleToggleMilestone(milestone.id)}
-                  className={`w-8 h-8 border-2 rounded-full cursor-pointer transition-all bg-white flex items-center justify-center flex-shrink-0 ${
-                    isCompleted ? 'border-[#7DB8E0] bg-[#7DB8E0]' : 'border-gray-300 hover:border-[#7DB8E0]'
+                  className={`w-8 h-8 border-2 rounded-full cursor-pointer transition-all bg-white flex-shrink-0 ${
+                    isCompleted ? 'border-[#7DB8E0]' : 'border-gray-300 hover:border-[#7DB8E0]'
                   }`}
+                  style={{
+                    backgroundImage: isCompleted
+                      ? 'radial-gradient(circle, white 8px, #7DB8E0 8px, #7DB8E0 100%)'
+                      : 'none',
+                  }}
                   title={isCompleted ? "Mark active" : "Mark achieved"}
-                >
-                  {isCompleted && <CheckIcon className="w-5 h-5 text-white stroke-[3]" />}
-                </button>
+                />
 
                 {/* Dropdown Menu (Three dots) */}
                 <div className="relative">
