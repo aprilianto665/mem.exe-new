@@ -13,11 +13,10 @@ import {
   TrophyIcon, 
   CalendarIcon, 
   BoltIcon, 
-  CheckIcon,
-  PencilIcon,
-  TrashIcon,
-  ChevronRightIcon,
-  EllipsisVerticalIcon,
+  PencilIcon, 
+  TrashIcon, 
+  ChevronRightIcon, 
+  EllipsisVerticalIcon, 
   PlusIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
@@ -388,14 +387,17 @@ export const Todo = () => {
                         className="flex items-center gap-2.5 text-left flex-1 min-w-0 cursor-pointer"
                       >
                         <div
-                          className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+                          className={`w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all duration-200 bg-white ${
                             isSubDone
-                              ? 'bg-[#7DB8E0] border-[#7DB8E0] text-white shadow-xs'
-                              : 'border-gray-300 bg-white group-hover:border-[#7DB8E0]'
+                              ? 'border-[#7DB8E0]'
+                              : 'border-gray-300 group-hover:border-[#7DB8E0]'
                           }`}
-                        >
-                          {isSubDone && <CheckIcon className="w-3.5 h-3.5 stroke-[3]" />}
-                        </div>
+                          style={{
+                            backgroundImage: isSubDone
+                              ? 'radial-gradient(circle, white 5px, #7DB8E0 5px, #7DB8E0 100%)'
+                              : 'none',
+                          }}
+                        />
                         <span
                           className={`text-xs break-words transition-all duration-200 ${
                             isSubDone
