@@ -151,7 +151,7 @@ export const Todo = () => {
     try {
       await toggleSubtask(subtaskId);
       if (!currentStatus) {
-        toast.success(`Sub-quest "${title}" completed! ✨`);
+        toast.success(`Sub-quest "${title}" completed!`);
       }
     } catch (err: any) {
       toast.error('Failed to update sub-quest.');
@@ -165,7 +165,7 @@ export const Todo = () => {
       await addSubtask(milestoneId, trimmed);
       setInlineSubtaskTitle('');
       setAddingSubtaskForId(null);
-      toast.success('Sub-quest added! 🎯');
+      toast.success('Sub-quest added!');
     } catch (err: any) {
       toast.error('Failed to add sub-quest.');
     }
