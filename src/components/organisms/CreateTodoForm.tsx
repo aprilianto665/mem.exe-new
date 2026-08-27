@@ -142,7 +142,7 @@ export const CreateTodoForm = () => {
               type="button"
               variant="primary"
               onClick={handleAddSubtask}
-              className="!py-2.5 !px-4 !rounded-2xl font-semibold text-xs shadow-sm flex items-center justify-center gap-1.5 flex-shrink-0"
+              className="!py-2.5 !px-4 !rounded-xl font-semibold text-xs shadow-sm flex items-center justify-center gap-1.5 flex-shrink-0"
             >
               <PlusIcon className="w-4 h-4 text-white stroke-[2.5]" />
               <span>Add Quest</span>
