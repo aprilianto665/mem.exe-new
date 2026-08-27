@@ -107,7 +107,7 @@ export const CreateTodoForm = () => {
               {subtasks.map((task, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between gap-2 p-2.5 bg-gray-50/80 rounded-2xl border border-gray-100 animate-fadeIn"
+                  className="flex items-center justify-between gap-2 p-2.5 bg-[#F8FAFC] rounded-2xl animate-fadeIn"
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#7DB8E0]/15 text-[#7DB8E0] text-[11px] font-bold flex items-center justify-center">
