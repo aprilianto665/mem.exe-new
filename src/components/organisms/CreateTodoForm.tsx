@@ -131,7 +131,7 @@ export const CreateTodoForm = () => {
 
           <div className="flex items-center gap-2">
             <Input
-              placeholder="e.g. Complete grammar module, Practice 50 Kanji..."
+              placeholder="e.g. Finish phase 1, Learn basics"
               value={newSubtask}
               onChange={(e) => setNewSubtask(e.target.value)}
               onKeyDown={handleKeyDownSubtask}
