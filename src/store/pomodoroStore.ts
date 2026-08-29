@@ -15,6 +15,7 @@ export interface PomodoroStoreState {
   serverTimeOffset: number; // difference in ms (server - client)
   hasFetched: boolean;
 
+  setInitialSession: (session: PomodoroSessionData | null) => void;
   fetchStatus: () => Promise<void>;
   start: (missionId: string) => Promise<void>;
   stopEarly: () => Promise<void>;
@@ -29,6 +30,17 @@ export const usePomodoroStore = create<PomodoroStoreState>((set, get) => ({
   error: null,
   serverTimeOffset: 0,
   hasFetched: false,
+
+  setInitialSession: (session) => {
+    if (session) {
+      const serverNowMs = new Date(session.serverNow).getTime();
+      const clientNowMs = Date.now();
+      const offset = serverNowMs - clientNowMs;
+      set({ session, serverTimeOffset: offset, hasFetched: true, error: null });
+    } else {
+      set({ session: null, hasFetched: true, error: null });
+    }
+  },
 
   setSession: (session) => set({ session }),
 

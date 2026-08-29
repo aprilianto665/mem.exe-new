@@ -54,6 +54,51 @@ export interface DailyProgress {
   status: 'pending' | 'completed' | 'failed' | 'missed';
 }
 
+export function mapBackendMissions(backendMissions: any[]): Mission[] {
+  return (backendMissions || []).map((item: any): Mission => {
+    const baseSecs = item.logged_seconds !== undefined ? item.logged_seconds : (item.logged_minutes || 0) * 60;
+    let currentSecs = baseSecs;
+    if (item.timer_started_at) {
+      const elapsedSecs = Math.max(0, Math.floor((Date.now() - new Date(item.timer_started_at).getTime()) / 1000));
+      currentSecs += elapsedSecs;
+    }
+    const currentMinutes = Math.min(item.minutes_per_day, Math.floor(currentSecs / 60));
+
+    return {
+      id: item.id,
+      name: item.title,
+      reason: item.description || "",
+      commitmentType: item.type === 'daily_habit' ? 'daily-habit' : 'challenge',
+      commitmentLevel: 'normal',
+      frequency: item.type === 'daily_habit' ? 'everyday' : 'custom',
+      currentDays: item.current_day,
+      minutesPerDay: item.minutes_per_day,
+      targetMinutes: item.minutes_per_day,
+      currentMinutes: currentMinutes,
+      loggedMinutes: item.logged_minutes,
+      loggedSeconds: baseSecs,
+      status: item.status === 'cancelled' ? 'canceled' : (item.status as any),
+      streak: item.streak || 0,
+      missed: item.missed_consecutive || 0,
+      linkedMilestoneId: undefined,
+      timerStartedAt: item.timer_started_at || undefined,
+      startDate: item.start_date || undefined,
+      selectedDays: item.days_of_week || undefined,
+      duration: item.duration || undefined
+    };
+  });
+}
+
+export function mapBackendHistory(backendHistory: any[]): DailyProgress[] {
+  return (backendHistory || []).map((h: any): DailyProgress => ({
+    missionId: h.mission_id,
+    date: h.date,
+    minutesDone: h.minutes_done,
+    requiredMinutes: h.required_minutes,
+    status: h.status as any
+  }));
+}
+
 export interface MissionStoreState {
   missions: Mission[];
   milestones: Milestone[];
@@ -89,6 +134,7 @@ export interface MissionStoreState {
   toggleSubtask: (subtaskId: string) => Promise<void>;
   deleteSubtask: (subtaskId: string) => Promise<void>;
   updateSubtask: (subtaskId: string, title: string) => Promise<void>;
+  setInitialData: (missions: Mission[], history?: DailyProgress[]) => void;
   setIsLoading: (loading: boolean) => void;
 }
 
@@ -99,6 +145,9 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
   monthlyTimeline: [],
   isLoading: false,
   error: null,
+
+  setInitialData: (missions, history = []) =>
+    set({ missions, history, isLoading: false, error: null }),
 
   fetchMissionDetail: async (id: string) => {
     set({ isLoading: true, error: null });
@@ -217,46 +266,8 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
       const backendMissions = res.data || [];
       const backendHistory = res.history || [];
 
-      const mappedMissions = backendMissions.map((item: any): Mission => {
-        const baseSecs = item.logged_seconds !== undefined ? item.logged_seconds : (item.logged_minutes || 0) * 60;
-        let currentSecs = baseSecs;
-        if (item.timer_started_at) {
-          const elapsedSecs = Math.max(0, Math.floor((Date.now() - new Date(item.timer_started_at).getTime()) / 1000));
-          currentSecs += elapsedSecs;
-        }
-        const currentMinutes = Math.min(item.minutes_per_day, Math.floor(currentSecs / 60));
-
-        return {
-          id: item.id,
-          name: item.title,
-          reason: item.description || "",
-          commitmentType: item.type === 'daily_habit' ? 'daily-habit' : 'challenge',
-          commitmentLevel: 'normal',
-          frequency: item.type === 'daily_habit' ? 'everyday' : 'custom',
-          currentDays: item.current_day,
-          minutesPerDay: item.minutes_per_day,
-          targetMinutes: item.minutes_per_day,
-          currentMinutes: currentMinutes,
-          loggedMinutes: item.logged_minutes,
-          loggedSeconds: baseSecs,
-          status: item.status === 'cancelled' ? 'canceled' : (item.status as any),
-          streak: item.streak || 0,
-          missed: item.missed_consecutive || 0,
-          linkedMilestoneId: undefined,
-          timerStartedAt: item.timer_started_at || undefined,
-          startDate: item.start_date || undefined,
-          selectedDays: item.days_of_week || undefined,
-          duration: item.duration || undefined
-        };
-      });
-
-      const mappedHistory = backendHistory.map((h: any): DailyProgress => ({
-        missionId: h.mission_id,
-        date: h.date,
-        minutesDone: h.minutes_done,
-        requiredMinutes: h.required_minutes,
-        status: h.status as any
-      }));
+      const mappedMissions = mapBackendMissions(backendMissions);
+      const mappedHistory = mapBackendHistory(backendHistory);
 
       set({ missions: mappedMissions, history: mappedHistory, isLoading: false });
     } catch (err: any) {
