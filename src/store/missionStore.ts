@@ -99,6 +99,27 @@ export function mapBackendHistory(backendHistory: any[]): DailyProgress[] {
   }));
 }
 
+export function mapBackendMilestones(backendMilestones: any[]): Milestone[] {
+  return (backendMilestones || []).map((m: any): Milestone => ({
+    id: m.id,
+    title: m.title,
+    description: m.description || undefined,
+    deadline: m.deadline || undefined,
+    status: m.status as any,
+    createdAt: m.created_at,
+    completedAt: m.completed_at || undefined,
+    subtasks: (m.subtasks || []).map((s: any): MilestoneSubtask => ({
+      id: s.id,
+      milestoneId: s.milestone_id || s.milestoneId,
+      title: s.title,
+      isCompleted: s.is_completed ?? s.isCompleted ?? false,
+      orderIndex: s.order_index ?? s.orderIndex ?? 0,
+      createdAt: s.created_at || s.createdAt,
+      completedAt: s.completed_at || s.completedAt || undefined,
+    })),
+  }));
+}
+
 export interface MissionStoreState {
   missions: Mission[];
   milestones: Milestone[];
@@ -135,6 +156,7 @@ export interface MissionStoreState {
   deleteSubtask: (subtaskId: string) => Promise<void>;
   updateSubtask: (subtaskId: string, title: string) => Promise<void>;
   setInitialData: (missions: Mission[], history?: DailyProgress[]) => void;
+  setInitialMilestones: (milestones: Milestone[]) => void;
   setIsLoading: (loading: boolean) => void;
 }
 
@@ -148,6 +170,9 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
 
   setInitialData: (missions, history = []) =>
     set({ missions, history, isLoading: false, error: null }),
+
+  setInitialMilestones: (milestones) =>
+    set({ milestones, isLoading: false, error: null }),
 
   fetchMissionDetail: async (id: string) => {
     set({ isLoading: true, error: null });
@@ -439,26 +464,7 @@ export const useMissionStore = create<MissionStoreState>((set, get) => ({
     set({ milestones: [], isLoading: true, error: null });
     try {
       const backendMilestones = await fetchMilestonesAction();
-
-      const mappedMilestones = backendMilestones.map((m: any): Milestone => ({
-        id: m.id,
-        title: m.title,
-        description: m.description || undefined,
-        deadline: m.deadline || undefined,
-        status: m.status as any,
-        createdAt: m.created_at,
-        completedAt: m.completed_at || undefined,
-        subtasks: (m.subtasks || []).map((s: any): MilestoneSubtask => ({
-          id: s.id,
-          milestoneId: s.milestone_id || s.milestoneId,
-          title: s.title,
-          isCompleted: s.is_completed ?? s.isCompleted ?? false,
-          orderIndex: s.order_index ?? s.orderIndex ?? 0,
-          createdAt: s.created_at || s.createdAt,
-          completedAt: s.completed_at || s.completedAt || undefined,
-        })),
-      }));
-
+      const mappedMilestones = mapBackendMilestones(backendMilestones);
       set({ milestones: mappedMilestones, isLoading: false });
     } catch (err: any) {
       console.error('Failed to fetch milestones data', err);

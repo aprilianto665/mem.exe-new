@@ -27,7 +27,6 @@ export const Todo = () => {
     milestones, 
     error,
     isLoading,
-    fetchMilestones,
     deleteMilestone, 
     toggleMilestone,
     updateMilestone,
@@ -47,10 +46,6 @@ export const Todo = () => {
   const [addingSubtaskForId, setAddingSubtaskForId] = useState<string | null>(null);
   const [inlineSubtaskTitle, setInlineSubtaskTitle] = useState('');
   const [selectedSubtaskId, setSelectedSubtaskId] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchMilestones();
-  }, [fetchMilestones]);
 
   useEffect(() => {
     const handleOutsideClick = () => {

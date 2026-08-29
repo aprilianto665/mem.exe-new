@@ -29,19 +29,14 @@ import toast from 'react-hot-toast';
 export const Settings = () => {
   const { handleLogout } = useLogout();
   const { settings, setSettings } = useSettingsStore();
-  const { missions, fetchDailyMissions } = useMissionStore();
-  const { session: pomodoroSession, fetchStatus: fetchPomodoroStatus } = usePomodoroStore();
+  const { missions } = useMissionStore();
+  const { session: pomodoroSession } = usePomodoroStore();
   const [activeMode, setActiveMode] = useState<'default' | 'pomodoro'>('default');
   const [pomodoroConfig, setPomodoroConfig] = useState({
     focus: '25',
     shortRest: '5'
   });
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    fetchPomodoroStatus();
-    fetchDailyMissions();
-  }, [fetchPomodoroStatus, fetchDailyMissions]);
 
   // Initialize state from store
   useEffect(() => {
