@@ -125,3 +125,17 @@ input[type=number] {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
 }
+
+/* Animated diagonal stripes moving infinitely from left to right */
+@keyframes stripe-move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 24px 0;
+  }
+}
+
+.animate-stripes-move {
+  animation: stripe-move 1s linear infinite;
+}
