@@ -18,7 +18,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, [status, session, router]);
 
   if (status === 'loading') {
-    return <Loading message="Loading your system..." />;
+    return <Loading message="Booting system..." />;
   }
 
   if (status === 'unauthenticated' || !session) {

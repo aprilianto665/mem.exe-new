@@ -8,7 +8,7 @@ interface LoadingProps {
 }
 
 export const Loading = ({
-  message = "Loading your system...",
+  message = "Booting system...",
   className = "",
   size = 96,
   fullScreen = true,
