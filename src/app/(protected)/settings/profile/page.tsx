@@ -1,5 +1,5 @@
-import { MyAccount } from "@/views/Settings/MyAccount";
+import { ProfileView } from "@/features/settings";
 
 export default function ProfilePage() {
-  return <MyAccount />;
+  return <ProfileView />;
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyAndExtractUserIdFromApiKey } from "@/lib/apiKey";
-import { fetchPublicDailyMissionsAction } from "@/actions/missions";
+import { fetchPublicDailyMissionsAction } from "@/features/missions/actions/missions";
 
 function getCorsHeaders() {
   return {

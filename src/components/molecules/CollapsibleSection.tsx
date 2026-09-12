@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import type { CollapsibleSectionProps } from '../../types/collapsibleSection.types';
 import { Text } from '../atoms/Text';

@@ -1,5 +1,5 @@
-import { Create } from "@/views/Create/Create";
+import { CreateView } from "@/features/create";
 
 export default function CreatePage() {
-  return <Create />;
+  return <CreateView />;
 }

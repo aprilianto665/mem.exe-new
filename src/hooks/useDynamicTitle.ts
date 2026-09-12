@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { useMissionStore } from '../store/missionStore';
-import { usePomodoroStore } from '../store/pomodoroStore';
+import { useMissionStore } from '@/features/missions';
+import { usePomodoroStore } from '@/features/pomodoro';
 
 const DEFAULT_TITLE = 'mem.exe - Run your discipline';
 

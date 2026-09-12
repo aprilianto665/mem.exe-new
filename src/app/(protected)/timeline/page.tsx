@@ -1,5 +1,5 @@
-import { Timeline } from "@/views/Timeline/Timeline";
+import { TimelineView } from "@/features/missions";
 
 export default function TimelinePage() {
-  return <Timeline />;
+  return <TimelineView />;
 }

@@ -1,5 +1,5 @@
-import { Timezone } from "@/views/Settings/Timezone";
+import { TimezoneView } from "@/features/settings";
 
 export default function TimezonePage() {
-  return <Timezone />;
+  return <TimezoneView />;
 }

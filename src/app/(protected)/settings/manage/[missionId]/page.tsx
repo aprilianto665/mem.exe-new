@@ -1,5 +1,5 @@
-import { MissionDetail } from "@/views/Settings/MissionDetail";
+import { MissionDetailView } from "@/features/missions";
 
 export default function MissionDetailPage() {
-  return <MissionDetail />;
+  return <MissionDetailView />;
 }

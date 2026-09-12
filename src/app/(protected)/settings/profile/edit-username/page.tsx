@@ -1,5 +1,5 @@
-import { EditUsername } from "@/views/Settings/EditUsername";
+import { EditUsernameView } from "@/features/settings";
 
 export default function EditUsernamePage() {
-  return <EditUsername />;
+  return <EditUsernameView />;
 }

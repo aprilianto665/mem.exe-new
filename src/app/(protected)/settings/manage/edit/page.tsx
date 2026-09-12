@@ -1,5 +1,5 @@
-import { EditMission } from "@/views/Settings/EditMission";
+import { EditMissionView } from "@/features/missions";
 
 export default function EditMissionPage() {
-  return <EditMission />;
+  return <EditMissionView />;
 }

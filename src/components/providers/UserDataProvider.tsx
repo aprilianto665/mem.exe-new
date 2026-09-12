@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useUserData } from '../../hooks/useUserData';
+import { useUserData } from '@/features/settings';
 
 interface UserDataProviderProps {
   children: ReactNode;

@@ -1,10 +1,10 @@
 "use client";
 
 import { useRef } from "react";
-import { useMissionStore, type DailyProgress, type Milestone } from "@/store/missionStore";
-import { usePomodoroStore } from "@/store/pomodoroStore";
-import type { Mission } from "@/types/mission.types";
-import type { PomodoroSessionData } from "@/services/pomodoroService";
+import { useMissionStore, type DailyProgress, type Milestone } from "@/features/missions/store/missionStore";
+import { usePomodoroStore } from "@/features/pomodoro/store/pomodoroStore";
+import type { Mission } from "@/features/missions/types/mission.types";
+import type { PomodoroSessionData } from "@/features/pomodoro/services/pomodoroService";
 
 interface StoreInitializerProps {
   missions?: Mission[];

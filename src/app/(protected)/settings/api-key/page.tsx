@@ -1,5 +1,5 @@
-import { ApiKeyPage } from "@/views/Settings/ApiKeyPage";
+import { ApiKeyView } from "@/features/settings";
 
 export default function PublicApiKeyPage() {
-  return <ApiKeyPage />;
+  return <ApiKeyView />;
 }

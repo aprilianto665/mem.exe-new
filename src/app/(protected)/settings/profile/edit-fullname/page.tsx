@@ -1,5 +1,5 @@
-import { EditFullName } from "@/views/Settings/EditFullName";
+import { EditFullNameView } from "@/features/settings";
 
 export default function EditFullNamePage() {
-  return <EditFullName />;
+  return <EditFullNameView />;
 }
