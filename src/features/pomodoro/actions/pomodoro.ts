@@ -212,6 +212,27 @@ export async function startPomodoroAction(missionId: string): Promise<PomodoroSe
   const restMinutes = settings.pomodoro?.rest_minutes ?? 5;
   const now = new Date();
   const expectedEnd = new Date(now.getTime() + focusMinutes * 60 * 1000);
+  const todayStr = getLocalDateString(now, timezone);
+  const todayDate = new Date(todayStr + "T00:00:00Z");
+
+  // Lock today's required_minutes snapshot when Pomodoro starts before any log occurs.
+  await prisma.mission_daily_progress.upsert({
+    where: {
+      mission_id_mission_date: {
+        mission_id: missionId,
+        mission_date: todayDate,
+      },
+    },
+    update: {},
+    create: {
+      mission_id: missionId,
+      mission_date: todayDate,
+      required_minutes: mission.current_minutes_per_day,
+      minutes_done: 0,
+      seconds_done: 0,
+      status: "pending",
+    },
+  });
 
   const session = await prisma.active_pomodoro_sessions.upsert({
     where: { user_id: userId },

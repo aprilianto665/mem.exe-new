@@ -127,7 +127,7 @@ export const MissionListTimeline = ({
               {dayData.missions.map(({ mission, completion }) => {
                 const status: MissionCompletionStatus = completion?.status || 'pending';
                 const dotColor = getCommitmentTypeColor(mission.commitmentType);
-                const targetMin = completion?.targetMinutes || mission.minutesPerDay || mission.targetMinutes;
+                const targetMin = completion?.targetMinutes ?? mission.targetMinutes ?? mission.minutesPerDay;
                 const completedMin = completion?.completedMinutes || 0;
                 const dayText = mission.commitmentType === 'challenge' && mission.duration
                   ? `Day ${mission.currentDays || 1} of ${mission.duration}`

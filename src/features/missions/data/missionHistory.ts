@@ -230,7 +230,8 @@ export const getMissionCompletionForDate = (
   const isFuture = !isToday && date > today;
 
   if (isToday) {
-    const targetMinutes = mission.minutesPerDay || mission.targetMinutes || 60;
+    const todayRecord = history?.find(h => h.missionId === mission.id && h.date === dateStr);
+    const targetMinutes = todayRecord?.requiredMinutes || mission.targetMinutes || mission.minutesPerDay || 60;
     
     // Live running minutes if timer is active
     const baseSecs =
@@ -265,7 +266,7 @@ export const getMissionCompletionForDate = (
     };
   } else {
     // Past date: Look up in history list first!
-    const targetMinutes = mission.minutesPerDay || mission.targetMinutes || 60;
+    const targetMinutes = mission.targetMinutes || mission.minutesPerDay || 60;
     if (history) {
       const record = history.find(h => h.missionId === mission.id && h.date === dateStr);
       if (record) {

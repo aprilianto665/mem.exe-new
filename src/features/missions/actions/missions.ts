@@ -673,6 +673,81 @@ function getDayStatusGo(
   return "has-missions";
 }
 
+async function ensureMissionDailySnapshots(
+  rawMissions: prisma_missions[],
+  historyRows: prisma_mission_daily_progress[],
+  todayDate: Date,
+  timezone: string
+): Promise<boolean> {
+  const todayStr = getLocalDateString(todayDate, timezone);
+  const existingKeys = new Set<string>(
+    historyRows.map((h) => `${h.mission_id}_${getLocalDateString(h.mission_date, timezone)}`)
+  );
+  const toCreate: Array<{
+    mission_id: string;
+    mission_date: Date;
+    required_minutes: number;
+    minutes_done: number;
+    seconds_done: number;
+    status: "missed" | "pending";
+  }> = [];
+
+  for (const m of rawMissions) {
+    if (m.status === "cancelled" || !m.start_date) continue;
+
+    const completedDaysCount = historyRows.filter(
+      (h) =>
+        h.mission_id === m.id &&
+        (h.status === "completed" || h.minutes_done >= h.required_minutes)
+    ).length;
+
+    // Completed challenges stop at completion date instead of generating missed rows up to today.
+    const isCompletedChallenge =
+      m.status === "completed" ||
+      (m.type === "challenge" && m.target_days !== null && completedDaysCount >= m.target_days);
+
+    let endDate = todayDate;
+    if (isCompletedChallenge) {
+      const compDate = getMissionCompletionDateTS(m.id, m.type, m.target_days, historyRows, timezone);
+      if (!compDate) continue;
+      const compUtc = new Date(getLocalDateString(compDate, timezone) + "T00:00:00Z");
+      if (compUtc.getTime() < todayDate.getTime()) {
+        endDate = compUtc;
+      }
+    }
+
+    const startStr = getLocalDateString(m.start_date, timezone);
+    const curr = new Date(startStr + "T00:00:00Z");
+
+    while (curr.getTime() <= endDate.getTime()) {
+      if (isMissionScheduledInTS(m.start_date, m.days_of_week, m.type, m.target_days, curr, timezone)) {
+        const dStr = getLocalDateString(curr, timezone);
+        const key = `${m.id}_${dStr}`;
+        if (!existingKeys.has(key)) {
+          toCreate.push({
+            mission_id: m.id,
+            mission_date: new Date(dStr + "T00:00:00Z"),
+            required_minutes: m.current_minutes_per_day,
+            minutes_done: 0,
+            seconds_done: 0,
+            status: dStr < todayStr ? "missed" : "pending",
+          });
+          existingKeys.add(key);
+        }
+      }
+      curr.setUTCDate(curr.getUTCDate() + 1);
+    }
+  }
+
+  if (toCreate.length === 0) return false;
+
+  await prisma.mission_daily_progress.createMany({
+    data: toCreate,
+    skipDuplicates: true,
+  });
+  return true;
+}
+
 // SERVER ACTIONS BELOW
 
 export async function fetchMissionsAction(
@@ -777,6 +852,7 @@ export async function fetchMissionsAction(
       current_day: currentDay,
       target_day: m.target_days ?? 0,
       minutes_per_day: m.current_minutes_per_day,
+      target_minutes: progressToday?.required_minutes ?? m.current_minutes_per_day,
       timer_started_at: progressToday?.timer_started_at?.toISOString() || null,
       logged_minutes: Math.floor(totalSecs / 60),
       logged_seconds: totalSecs,
@@ -818,18 +894,28 @@ export async function fetchDailyMissionsAction(timezoneArg?: string) {
 
   const rawMissions = await prisma.missions.findMany({
     where: { user_id: userId },
-    include: {
-      mission_daily_progress: {
-        where: { mission_date: todayDate },
-      },
-    },
     orderBy: { created_at: "desc" },
   });
 
-  const historyRows = await prisma.mission_daily_progress.findMany({
+  let historyRows = await prisma.mission_daily_progress.findMany({
     where: { missions: { user_id: userId } },
     orderBy: { mission_date: "desc" },
   });
+
+  const created = await ensureMissionDailySnapshots(rawMissions, historyRows, todayDate, timezone);
+  if (created) {
+    historyRows = await prisma.mission_daily_progress.findMany({
+      where: { missions: { user_id: userId } },
+      orderBy: { mission_date: "desc" },
+    });
+  }
+
+  const todayProgressMap = new Map<string, prisma_mission_daily_progress>();
+  for (const h of historyRows) {
+    if (getLocalDateString(h.mission_date, timezone) === todayStr) {
+      todayProgressMap.set(h.mission_id, h);
+    }
+  }
 
   const missions: any[] = [];
   const history: any[] = [];
@@ -892,7 +978,8 @@ export async function fetchDailyMissionsAction(timezoneArg?: string) {
       status
     );
 
-    const progressToday = m.mission_daily_progress[0];
+    const progressToday = todayProgressMap.get(m.id);
+    const targetMinutes = progressToday?.required_minutes ?? m.current_minutes_per_day;
     const totalSecs = progressToday
       ? progressToday.seconds_done && progressToday.seconds_done > 0
         ? progressToday.seconds_done
@@ -908,6 +995,7 @@ export async function fetchDailyMissionsAction(timezoneArg?: string) {
       current_day: currentDay,
       target_day: m.target_days ?? 0,
       minutes_per_day: m.current_minutes_per_day,
+      target_minutes: targetMinutes,
       timer_started_at: progressToday?.timer_started_at?.toISOString() || null,
       logged_minutes: Math.floor(totalSecs / 60),
       logged_seconds: totalSecs,
@@ -923,7 +1011,7 @@ export async function fetchDailyMissionsAction(timezoneArg?: string) {
         mission_id: progressToday.mission_id,
         date: todayStr,
         minutes_done: progressToday.minutes_done,
-        required_minutes: progressToday.required_minutes,
+        required_minutes: targetMinutes,
         status: progressToday.status,
       });
     } else {
@@ -931,7 +1019,7 @@ export async function fetchDailyMissionsAction(timezoneArg?: string) {
         mission_id: m.id,
         date: todayStr,
         minutes_done: 0,
-        required_minutes: m.current_minutes_per_day,
+        required_minutes: targetMinutes,
         status: "pending",
       });
     }
@@ -1017,7 +1105,10 @@ export async function fetchMissionDetailAction(missionId: string, timezoneArg?: 
 
   if (shouldRecalculate) {
     const stats = await prisma.mission_daily_progress.aggregate({
-      where: { mission_id: missionId },
+      where: {
+        mission_id: missionId,
+        NOT: { mission_date: todayDate, status: "pending", minutes_done: 0 },
+      },
       _sum: { minutes_done: true },
       _avg: { minutes_done: true },
     });
@@ -1051,6 +1142,7 @@ export async function fetchMissionDetailAction(missionId: string, timezoneArg?: 
     current_day: currentDay,
     target_day: m.target_days ?? 0,
     minutes_per_day: m.current_minutes_per_day,
+    target_minutes: progressToday?.required_minutes ?? m.current_minutes_per_day,
     timer_started_at: progressToday?.timer_started_at?.toISOString() || null,
     logged_minutes: Math.floor(totalSecs / 60),
     logged_seconds: totalSecs,
@@ -1107,6 +1199,20 @@ export async function addMissionAction(payload: {
       start_date: startDate,
     },
   });
+
+  if (isMissionScheduledInTS(startDate, payload.days_of_week, payload.type, payload.duration || null, startDate, timezone)) {
+    await prisma.mission_daily_progress.createMany({
+      data: [{
+        mission_id: mission.id,
+        mission_date: startDate,
+        required_minutes: payload.minutes_per_day,
+        minutes_done: 0,
+        seconds_done: 0,
+        status: "pending",
+      }],
+      skipDuplicates: true,
+    });
+  }
 
   return { id: mission.id };
 }
@@ -1424,6 +1530,7 @@ export async function fetchTimelineDataAction(timezoneArg?: string) {
       current_day: currentDay,
       target_day: m.target_days ?? 0,
       minutes_per_day: m.current_minutes_per_day,
+      target_minutes: progressToday?.required_minutes ?? m.current_minutes_per_day,
       timer_started_at: progressToday?.timer_started_at?.toISOString() || null,
       logged_minutes: Math.floor(totalSecs / 60),
       logged_seconds: totalSecs,
@@ -1580,9 +1687,16 @@ export async function fetchDailyTimelineAction(dateStr: string, timezoneArg?: st
     orderBy: { created_at: "desc" },
   });
 
-  const historyRows = await prisma.mission_daily_progress.findMany({
+  let historyRows = await prisma.mission_daily_progress.findMany({
     where: { missions: { user_id: userId } },
   });
+
+  const created = await ensureMissionDailySnapshots(rawMissions, historyRows, todayDateOnly, timezone);
+  if (created) {
+    historyRows = await prisma.mission_daily_progress.findMany({
+      where: { missions: { user_id: userId } },
+    });
+  }
 
   const historyMap = new Map<string, prisma_mission_daily_progress>();
   for (const h of historyRows) {
@@ -1657,6 +1771,7 @@ export async function fetchDailyTimelineAction(dateStr: string, timezoneArg?: st
     );
 
     const record = historyMap.get(`${m.id}_${dateStr}`);
+    const reqMin = record ? record.required_minutes : m.current_minutes_per_day;
 
     const totalSecs = record
       ? record.seconds_done && record.seconds_done > 0
@@ -1673,6 +1788,7 @@ export async function fetchDailyTimelineAction(dateStr: string, timezoneArg?: st
       current_day: currentDay,
       target_day: m.target_days ?? 0,
       minutes_per_day: m.current_minutes_per_day,
+      target_minutes: reqMin,
       timer_started_at: record?.timer_started_at?.toISOString() || null,
       logged_minutes: Math.floor(totalSecs / 60),
       logged_seconds: totalSecs,
@@ -1684,12 +1800,10 @@ export async function fetchDailyTimelineAction(dateStr: string, timezoneArg?: st
     };
 
     let loggedMin = 0;
-    let reqMin = m.current_minutes_per_day;
     let compStatus = "pending";
 
     if (record) {
       loggedMin = record.minutes_done;
-      reqMin = record.required_minutes;
       if (record.status === "completed" || record.minutes_done >= record.required_minutes) {
         compStatus = "completed";
       } else if (isPast) {
@@ -1756,18 +1870,28 @@ export async function fetchPublicDailyMissionsAction(userId: string) {
 
   const rawMissions = await prisma.missions.findMany({
     where: { user_id: userId },
-    include: {
-      mission_daily_progress: {
-        where: { mission_date: todayDate },
-      },
-    },
     orderBy: { created_at: "desc" },
   });
 
-  const historyRows = await prisma.mission_daily_progress.findMany({
+  let historyRows = await prisma.mission_daily_progress.findMany({
     where: { missions: { user_id: userId } },
     orderBy: { mission_date: "desc" },
   });
+
+  const created = await ensureMissionDailySnapshots(rawMissions, historyRows, todayDate, timezone);
+  if (created) {
+    historyRows = await prisma.mission_daily_progress.findMany({
+      where: { missions: { user_id: userId } },
+      orderBy: { mission_date: "desc" },
+    });
+  }
+
+  const todayProgressMap = new Map<string, prisma_mission_daily_progress>();
+  for (const h of historyRows) {
+    if (getLocalDateString(h.mission_date, timezone) === todayStr) {
+      todayProgressMap.set(h.mission_id, h);
+    }
+  }
 
   const formattedData: any[] = [];
 
@@ -1829,7 +1953,7 @@ export async function fetchPublicDailyMissionsAction(userId: string) {
       status
     );
 
-    const progressToday = m.mission_daily_progress[0];
+    const progressToday = todayProgressMap.get(m.id);
     const minutesDone = progressToday ? progressToday.minutes_done : 0;
     const requiredMinutes = progressToday ? progressToday.required_minutes : m.current_minutes_per_day;
     const isCompleted = progressToday
